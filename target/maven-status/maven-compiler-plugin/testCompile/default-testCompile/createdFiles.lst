@@ -1,0 +1,5 @@
+com\nbd\payments\merchant\repository\MerchantCredentialRepositoryTest.class
+com\nbd\payments\merchant\repository\MerchantRepositoryTest.class
+com\nbd\payments\merchant\service\MerchantApiKeyServiceTest.class
+com\nbd\payments\config\PasswordConfigTest.class
+com\nbd\payments\merchant\service\MerchantServiceTest.class

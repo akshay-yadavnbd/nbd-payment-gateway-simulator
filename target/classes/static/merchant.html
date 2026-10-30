@@ -1,0 +1,466 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NBD Payments - Merchant</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .actions button { width: auto; }
+        .hidden { display: none !important; }
+        .muted { color: #666; font-size: 13px; }
+        .key-box { overflow-wrap: anywhere; }
+        .table-wrap { overflow-x: auto; }
+        .small-btn { padding: 7px 10px; width: auto; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <nav>
+        <a href="/payment.html">Payment</a>
+        <a href="/admin.html">Admin</a>
+    </nav>
+
+    <h1>NBD Payments — Merchant</h1>
+
+    <div id="authSection">
+        <div class="card">
+            <h2>Merchant Registration</h2>
+            <form id="registerForm">
+                <input id="businessName" placeholder="Business name"
+                       maxlength="150">
+                <input id="registerEmail" type="email"
+                       placeholder="Email">
+                <input id="registerPassword" type="password"
+                       placeholder="Password" ><!--required -->
+                <button type="submit">Register</button>
+            </form>
+            <div id="registerMessage"></div>
+        </div>
+
+        <!--Merchant loging page-->
+
+        <div class="card">
+            <h2>Merchant Login</h2>
+            <form id="loginForm">
+                <input id="loginEmail" type="email"
+                       placeholder="Email">
+                <input id="loginPassword" type="password"
+                       placeholder="Password">
+                <button type="submit">Login</button>
+            </form>
+            <div id="loginMessage"></div>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <div class="card">
+            <div class="actions">
+                <h2 style="flex:1">Merchant Dashboard</h2>
+                <button id="refreshBtn" type="button">Refresh</button>
+                <button id="logoutBtn" type="button"
+                        class="secondary">Logout</button>
+            </div>
+            <p id="merchantIdentity"></p>
+            <h2 id="balanceText">Balance: ₹0.00</h2>
+            <div id="dashboardMessage"></div>
+        </div>
+
+        <div class="card">
+            <h2>Merchant API Key</h2>
+            <p class="muted">
+                Generate your key once. Existing keys cannot be
+                retrieved from the database.
+            </p>
+            <button id="generateKeyBtn" type="button">
+                Generate API Key
+            </button>
+            <div id="apiKeySection" class="hidden">
+                <label for="apiKeyInput">API Key</label>
+                <input id="apiKeyInput" type="password"
+                       placeholder="Paste existing key or use generated key">
+                <div class="actions">
+                    <button id="showKeyBtn" type="button"
+                            class="secondary">Show / Hide</button>
+                    <button id="copyKeyBtn" type="button"
+                            class="secondary">Copy Key</button>
+                </div>
+            </div>
+            <div id="keyMessage"></div>
+        </div>
+
+        <div class="card">
+            <h2>Create Payment Request</h2>
+            <form id="paymentForm">
+                <label for="paymentAmount">Amount (INR)</label>
+                <input id="paymentAmount" type="number"
+                       min="0.01" step="0.01"
+                       placeholder="Example: 500.00" required>
+                <button type="submit">Create Payment</button>
+            </form>
+
+            <div id="paymentMessage"></div>
+
+            <div id="checkoutSection" class="hidden">
+                <p><strong>Customer Checkout Link</strong></p>
+                <input id="checkoutLink" readonly>
+                <div class="actions">
+                    <button id="copyLinkBtn" type="button">
+                        Copy Link
+                    </button>
+                    <button id="openLinkBtn" type="button">
+                        Open Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Transactions</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Error</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="transactionsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+"use strict";
+
+    const $ = id => document.getElementById(id);
+    let merchantApiKey = "";
+    let checkoutUrl = "";
+
+    function message(id, text, ok = true) {
+        showMessage(id, text, ok);
+    }
+
+    function showDashboard(merchant) {
+        $("authSection").classList.add("hidden");
+        $("dashboard").classList.remove("hidden");
+        $("merchantIdentity").textContent =
+            merchant.businessName + " | " + merchant.merchantId;
+        $("loginForm").reset();
+    }
+
+    function showLogin() {
+        $("dashboard").classList.add("hidden");
+        $("authSection").classList.remove("hidden");
+        $("apiKeySection").classList.add("hidden");
+        $("checkoutSection").classList.add("hidden");
+        merchantApiKey = "";
+        checkoutUrl = "";
+        $("apiKeyInput").value = "";
+    }
+
+    function setBusy(button, busy) {
+        button.disabled = busy;
+    }
+
+    function getKey() {
+        const key = $("apiKeyInput").value.trim() || merchantApiKey;
+        return key;
+    }
+
+    function toPaise(value) {
+        // Parse decimal rupees exactly to avoid floating-point errors.
+        if (!/^\d+(\.\d{1,2})?$/.test(value)) {
+            throw new Error("Enter a valid amount with up to 2 decimals.");
+        }
+        const [rupees, decimals = ""] = value.split(".");
+        const amount = BigInt(rupees) * 100n +
+            BigInt(decimals.padEnd(2, "0"));
+
+        if (amount <= 0n || amount > BigInt(Number.MAX_SAFE_INTEGER)) {
+            throw new Error("Invalid payment amount.");
+        }
+        return Number(amount);
+    }
+
+        // Registration
+        $("registerForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            const button = event.submitter;
+            setBusy(button, true);
+
+            try {
+                const result = await api("/api/v1/merchants", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        businessName: $("businessName").value.trim(),
+                        email: $("registerEmail").value.trim(),
+                        password: $("registerPassword").value
+                    })
+                });
+
+                message("registerMessage",
+                    "Registered successfully. Merchant ID: " +
+                    result.merchantId + ". Await admin approval.");
+                $("registerForm").reset();
+            } catch (error) {
+                message("registerMessage", error.message, false);
+            } finally {
+                setBusy(button, false);
+            }
+        });
+
+        // Login
+        $("loginForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            const button = event.submitter;
+            setBusy(button, true);
+
+            try {
+                const result = await api("/api/v1/merchants/login", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email: $("loginEmail").value.trim(),
+                        password: $("loginPassword").value
+                    })
+                });
+
+                showDashboard(result);
+                await loadMerchantData();
+            } catch (error) {
+                message("loginMessage", error.message, false);
+            } finally {
+                setBusy(button, false);
+            }
+        });
+
+        // Load balance and transactions
+        async function loadMerchantData() {
+            try {
+                const [balance, transactions] = await Promise.all([
+                    api("/api/v1/merchants/balance"),
+                    api("/api/v1/merchants/transactions")
+                ]);
+
+                $("balanceText").textContent =
+                    "Simulated Balance: " + formatAmount(balance.balancePaise);
+
+                renderTransactions(transactions);
+                $("dashboardMessage").textContent = "";
+            } catch (error) {
+                message("dashboardMessage", error.message, false);
+            }
+        }
+
+        function renderTransactions(transactions) {
+            const tbody = $("transactionsBody");
+            tbody.replaceChildren();
+
+            if (!transactions.length) {
+                const row = tbody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 6;
+                cell.textContent = "No transactions yet.";
+                return;
+            }
+
+            for (const payment of transactions) {
+                const row = tbody.insertRow();
+
+                const values = [
+                    payment.paymentId,
+                    formatAmount(payment.amountPaise),
+                    payment.status,
+                    payment.errorCode || "-",
+                    payment.createdAt
+                        ? new Date(payment.createdAt).toLocaleString()
+                        : "-"
+                ];
+
+                for (const value of values) {
+                    row.insertCell().textContent = value;
+                }
+
+                const action = row.insertCell();
+
+                if (payment.status === "SUCCESS") {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "small-btn danger";
+                    button.textContent = "Full Refund";
+                    button.addEventListener("click",
+                        () => refundPayment(payment.paymentId));
+                    action.appendChild(button);
+                } else {
+                    action.textContent = "-";
+                }
+            }
+        }
+
+        // API-key issuance
+        $("generateKeyBtn").addEventListener("click", async event => {
+            const button = event.currentTarget;
+            setBusy(button, true);
+
+            try {
+                const csrf = await getCsrfToken("merchants");
+                const result = await api("/api/v1/merchants/api-key", {
+                    method: "POST",
+                    headers: csrf
+                });
+
+                merchantApiKey = result.apiKey;
+                $("apiKeyInput").value = merchantApiKey;
+                $("apiKeySection").classList.remove("hidden");
+
+                message("keyMessage",
+                    "API key generated. Copy and save it now; " +
+                    "it cannot be retrieved again.");
+            } catch (error) {
+                $("apiKeySection").classList.remove("hidden");
+
+                message("keyMessage", error.message, false);
+            } finally {
+                setBusy(button, false);
+            }
+        });
+
+        $("showKeyBtn").addEventListener("click", () => {
+            $("apiKeyInput").type =
+                $("apiKeyInput").type === "password" ? "text" : "password";
+        });
+
+        $("copyKeyBtn").addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(getKey());
+                message("keyMessage", "API key copied.");
+            } catch (error) {
+                message("keyMessage", error.message, false);
+            }
+        });
+
+        // Create payment
+        $("paymentForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            const button = event.submitter;
+            setBusy(button, true);
+
+            try {
+                const amountPaise = toPaise($("paymentAmount").value);
+                const apiKey = getKey();
+
+                const result = await api("/api/v1/payments", {
+                    method: "POST",
+                    headers: { "X-API-Key": apiKey },
+                    body: JSON.stringify({
+                        amountPaise,
+                        currency: "INR"
+                    })
+                });
+
+
+                if (
+                    typeof result.checkoutToken !== "string" ||
+                    !/^[0-9a-f]{64}$/.test(result.checkoutToken)
+                ) {
+                    throw new Error(
+                        "Payment was created but no valid checkout token was returned. " +
+                        "Check PaymentResponse.java."
+                    );
+                }
+
+                checkoutUrl = new URL("/payment.html", location.origin);
+                checkoutUrl.searchParams.set("token", result.checkoutToken);
+                checkoutUrl = checkoutUrl.toString();
+
+                $("checkoutLink").value = checkoutUrl;
+                $("checkoutSection").classList.remove("hidden");
+
+                message("paymentMessage",
+                    "Payment request created: " + result.paymentId);
+
+                await loadMerchantData();
+            } catch (error) {
+                message("paymentMessage", error.message, false);
+            } finally {
+                setBusy(button, false);
+            }
+        });
+
+        $("copyLinkBtn").addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(checkoutUrl);
+                message("paymentMessage", "Checkout link copied.");
+            } catch (error) {
+                message("paymentMessage", error.message, false);
+            }
+        });
+
+        $("openLinkBtn").addEventListener("click", () => {
+            if (checkoutUrl) {
+                window.open(checkoutUrl, "_blank", "noopener,noreferrer");
+            }
+        });
+
+        // Full refund
+        async function refundPayment(paymentId) {
+            if (!confirm("Refund this payment in full?")) return;
+
+            try {
+                const csrf = await getCsrfToken("merchants");
+
+                await api(
+                    `/api/v1/merchants/refunds/${encodeURIComponent(paymentId)}`,
+                    { method: "POST", headers: csrf }
+                );
+
+                message("dashboardMessage", "Full refund completed.");
+                await loadMerchantData();
+            } catch (error) {
+                message("dashboardMessage", error.message, false);
+            }
+        }
+
+        $("refreshBtn").addEventListener("click", loadMerchantData);
+
+        // Spring Security's default logout endpoint, if enabled.
+        $("logoutBtn").addEventListener("click", async () => {
+        const button = $("logoutBtn");
+        button.disabled = true;
+
+        try {
+            const csrf = await getCsrfToken("merchants");
+
+            await api("/logout", {
+                method: "POST",
+                headers: csrf
+            });
+
+            merchantApiKey = "";
+            checkoutUrl = "";
+
+            showLogin();
+            message("loginMessage", "Logged out successfully.");
+
+        } catch (error) {
+            message(
+                "dashboardMessage",
+                "Logout failed: " + error.message,
+                false
+            );
+        } finally {
+            button.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>

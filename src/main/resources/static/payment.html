@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBD Payments - Checkout</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="container" style="max-width: 450px;">
+
+    <div class="card">
+        <h1>NBD Payments</h1>
+        <p class="small">Secure Synthetic Card Checkout</p>
+
+        <!-- Merchant name and payment amount display-->
+        <div id="checkoutDetails" class="card">
+            <p>
+                <strong>Merchant:</strong>
+                <span id="merchantName">Loading...</span>
+            </p>
+
+            <h2 id="checkoutAmount">₹0.00</h2>
+
+            <p class="small">
+                Currency: INR
+            </p>
+        </div>
+        <!--Card details-->
+
+        <form id="paymentForm">
+            <input id="cardNumber"
+                   placeholder="Card Number"
+                   autocomplete="off"
+                   >
+
+            <input id="expiry"
+                   placeholder="MM/YY"
+                   maxlength="5"
+                   >
+
+            <input id="cvv"
+                   placeholder="CVV"
+                   type="password"
+                   maxlength="3"
+                   autocomplete="off"
+                   >
+
+            <button type="submit">Pay Now</button>
+        </form>
+
+        <div id="paymentMessage"></div>
+    </div>
+
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const checkoutToken =
+    new URLSearchParams(window.location.search).get("token");
+
+document.getElementById("paymentForm")
+    .addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        if (!checkoutToken) {
+            showMessage(
+                "paymentMessage",
+                "Invalid checkout link",
+                false
+            );
+            return;
+        }
+
+        const button = event.target.querySelector("button");
+        button.disabled = true;
+
+        try {
+            const result = await api(
+                `/api/v1/payments/checkout/${encodeURIComponent(checkoutToken)}/pay`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        cardNumber: document.getElementById("cardNumber").value,
+                        expiry: document.getElementById("expiry").value,
+                        cvv: document.getElementById("cvv").value
+                    })
+                }
+            );
+
+            // if (result.status === "SUCCESS") {
+
+            //     showMessage(
+            //         "paymentMessage",
+            //         "Payment successful. Transaction ID: " + result.paymentId
+            //     );
+
+            //     event.target.reset();
+
+            // } else {
+
+            //     const messages = {
+            //         INVALID_CARD: "Incorrect card details.",
+            //         INSUFFICIENT_FUNDS: "Insufficient balance.",
+            //         EXPIRED_CARD: "Card has expired.",
+            //         AUTHENTICATION_FAILED: "Card authentication failed. Please retry.",
+            //         LIMIT_EXCEEDED: "Transaction limit exceeded.",
+            //         FRAUD_SUSPECTED: "Transaction declined by issuing bank.",
+            //         ACCOUNT_RESTRICTED: "Card is restricted.",
+            //         TRANSACTION_NOT_ALLOWED: "Card is not enabled for this transaction.",
+            //         BLACKLISTED_BIN: "Card is not supported.",
+            //         SERVER_UNAVAILABLE: "Payment service temporarily unavailable.",
+            //         NETWORK_TIMEOUT: "Payment request timed out.",
+            //         MERCHANT_CONFIGURATION_ERROR: "Merchant is not configured for payments."
+            //     };
+
+            //     showMessage(
+            //         "paymentMessage",
+            //         messages[result.errorCode] || "Payment failed.",
+            //         false
+            //     );
+            // }
+
+            if (result.status === "SUCCESS") {
+                showMessage(
+                    "paymentMessage",
+                    "Payment successful. ID: " + result.paymentId
+                );
+                event.target.reset();
+            } else {
+                showMessage(
+                    "paymentMessage",
+                    "Payment failed: " + (result.errorCode || "Unknown error"),
+                    false
+                );
+            }
+
+        } catch (error) {
+            showMessage("paymentMessage", error.message, false);
+        } finally {
+            button.disabled = false;
+        }
+    });
+
+    //Merchant name and payment amount on checkout page javascript 
+    async function loadCheckoutDetails() {
+
+        if (!checkoutToken || checkoutToken === "undefined") {
+            showMessage(
+                "paymentMessage",
+                "Invalid checkout link",
+                false
+            );
+            document.getElementById("paymentForm").classList.add("hidden");
+            return;
+        }
+
+        try {
+            const details = await api(
+                `/api/v1/payments/checkout/${encodeURIComponent(checkoutToken)}`
+            );
+
+            document.getElementById("merchantName").textContent =
+                details.merchantName;
+
+            document.getElementById("checkoutAmount").textContent =
+                formatAmount(details.amountPaise);
+
+        } catch (error) {
+            showMessage(
+                "paymentMessage",
+                error.message,
+                false
+            );
+
+            document.getElementById("paymentForm").classList.add("hidden");
+        }
+    }
+
+loadCheckoutDetails();
+
+</script>
+
+</body>
+</html>
