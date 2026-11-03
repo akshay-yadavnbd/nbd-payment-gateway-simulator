@@ -149,7 +149,6 @@ public class MerchantController {
         );
     }
     
-    
     @GetMapping("/csrf")
     public ResponseEntity<Map<String, String>> csrf(
             org.springframework.security.web.csrf.CsrfToken csrfToken
@@ -161,7 +160,6 @@ public class MerchantController {
                 )
         );
     }
-
         
     @GetMapping("/transactions")
     public ResponseEntity<List<PaymentResponse>> transactions(
@@ -176,7 +174,6 @@ public class MerchantController {
                 paymentService.getMerchantTransactions(merchant)
         );
     }
-
         
     @GetMapping("/balance")
     public ResponseEntity<Map<String, Object>> balance(
@@ -198,7 +195,6 @@ public class MerchantController {
                 )
         );
     }
-
         
     @PostMapping("/refunds/{paymentId}")
     public ResponseEntity<PaymentResponse> refund(
@@ -217,8 +213,4 @@ public class MerchantController {
                 )
         );
     }
-
-
-
-
 }

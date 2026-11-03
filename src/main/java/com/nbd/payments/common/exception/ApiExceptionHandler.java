@@ -50,7 +50,7 @@ public class ApiExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of(
                     "error", "INVALID_CREDENTIALS",
-                    "message", "Invalid email or password"
+                    "message", ex.getMessage()
                 )
             );
 

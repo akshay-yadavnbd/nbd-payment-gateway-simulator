@@ -54,7 +54,7 @@ public class MerchantApiKeyService {
         )) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.FORBIDDEN,
-                    "API key has been already generated paste your API key"
+                    "API key has been already generated, enter your API key"
             );
         }
 
@@ -98,7 +98,9 @@ public class MerchantApiKeyService {
 
     @Transactional(readOnly = true)
     public Merchant authenticateApiKey(String apiKey){
-        if (apiKey == null ||
+        if (
+                apiKey == null || 
+                apiKey.isBlank() ||
                 !apiKey.matches("nbd_test_[0-9a-f]{64}")
         ) {
             throw new org.springframework.security.authentication.BadCredentialsException(

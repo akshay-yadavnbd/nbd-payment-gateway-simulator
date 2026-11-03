@@ -4,7 +4,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-
 public record MerchantRegistrationRequest(
     @NotBlank (message = "Business name is required")
     @Size (max = 150, message = "Business name must not exceed 150 characters")

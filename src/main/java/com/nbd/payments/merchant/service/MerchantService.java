@@ -186,7 +186,7 @@ public class MerchantService {
 
         if (!"ACTIVE".equals(merchant.getStatus())) {
             throw new DisabledException(
-                "Merchant account is not active"
+                "Account is not active"
             );
         }
 

@@ -97,7 +97,7 @@
                 <label for="paymentAmount">Amount (INR)</label>
                 <input id="paymentAmount" type="number"
                        min="0.01" step="0.01"
-                       placeholder="Example: 500.00" required>
+                       placeholder="Example: 500.00" >
                 <button type="submit">Create Payment</button>
             </form>
 
@@ -166,6 +166,14 @@
         merchantApiKey = "";
         checkoutUrl = "";
         $("apiKeyInput").value = "";
+         // Clear previous transactions
+        $("transactionsBody").replaceChildren();
+
+        $("registerMessage").textContent = "";
+        $("loginMessage").textContent = "";
+        $("dashboardMessage").textContent = "";
+        $("keyMessage").textContent = "";
+        $("paymentMessage").textContent = "";
     }
 
     function setBusy(button, busy) {

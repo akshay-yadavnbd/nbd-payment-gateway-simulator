@@ -8,6 +8,7 @@ import com.nbd.payments.merchant.repository.MerchantApiKeyRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.DisabledException;
 
 import java.util.Optional;
 
@@ -72,7 +73,7 @@ class MerchantApiKeyServiceTest {
                 .thenReturn(Optional.of(merchant));
 
         assertThrows(
-                IllegalStateException.class,
+                DisabledException.class,
                 () -> apiKeyService.generateApiKey("MER-TEST002")
         );
 

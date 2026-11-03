@@ -14,62 +14,77 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
 
-    private final PaymentService paymentService;
-    private final MerchantApiKeyService apiKeyService;
+        private final PaymentService paymentService;
+        private final MerchantApiKeyService apiKeyService;
 
-    public PaymentController(
-            PaymentService paymentService,
-            MerchantApiKeyService apiKeyService
-    ) {
-        this.paymentService = paymentService;
-        this.apiKeyService = apiKeyService;
-    }
+        public PaymentController(
+                PaymentService paymentService,
+                MerchantApiKeyService apiKeyService
+        ) {
+                this.paymentService = paymentService;
+                this.apiKeyService = apiKeyService;
+        }
 
-    @PostMapping
-    public ResponseEntity<PaymentResponse> createPayment(
-            @RequestHeader("X-API-Key") String apiKey,
-            @Valid @RequestBody CreatePaymentRequest request
-    ) {
+        @PostMapping
+        public ResponseEntity<PaymentResponse> createPayment(
+                @RequestHeader("X-API-Key") String apiKey,
+                @Valid @RequestBody CreatePaymentRequest request
+        ) {
+        Merchant apiKeyMerchant =
+                apiKeyService.authenticateApiKey(apiKey);
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_MERCHANT"))) {
+                String loggedInMerchantId = authentication.getName();
+                if (!loggedInMerchantId.equals(
+                        apiKeyMerchant.getMerchantId())) {
 
-        Merchant merchant = apiKeyService.authenticateApiKey(apiKey);
-
+                throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "API key is not valid for the logged-in merchant"
+                        );
+                }
+        }
         PaymentResponse response = paymentService.createPayment(
-                merchant,
+                apiKeyMerchant,
                 request.amountPaise()
         );
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
-    }
-
+        }
         
-    @PostMapping("/checkout/{checkoutToken}/pay")
-    public ResponseEntity<PaymentResponse> pay(
-            @PathVariable String checkoutToken,
-            @Valid @RequestBody CardPaymentRequest request
-    ) {
-        return ResponseEntity.ok(
-                paymentService.processCardPayment(
-                        checkoutToken,
-                        request
-                )
-        );
-    }
+        @PostMapping("/checkout/{checkoutToken}/pay")
+        public ResponseEntity<PaymentResponse> pay(
+                @PathVariable String checkoutToken,
+                @Valid @RequestBody CardPaymentRequest request
+        ) {
+                return ResponseEntity.ok(
+                        paymentService.processCardPayment(
+                                checkoutToken,
+                                request
+                        )
+                );
+        }
 
-    @GetMapping("/checkout/{checkoutToken}")
-    public ResponseEntity<Map<String, Object>> checkoutDetails(
-            @PathVariable String checkoutToken
-    ) {
-        return ResponseEntity.ok(
-                paymentService.getCheckoutDetails(checkoutToken)
-        );
-    }
-
+        @GetMapping("/checkout/{checkoutToken}")
+        public ResponseEntity<Map<String, Object>> checkoutDetails(
+                @PathVariable String checkoutToken
+        ) {
+                return ResponseEntity.ok(
+                        paymentService.getCheckoutDetails(checkoutToken)
+                );
+        }
 }
