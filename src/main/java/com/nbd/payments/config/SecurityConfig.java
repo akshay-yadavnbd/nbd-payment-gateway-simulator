@@ -92,6 +92,10 @@ public class SecurityConfig {
                 response.getWriter().write(
                     "{\"status\":401,\"message\":\"Session expired. Please log in again.\"}"
                 );
+                System.out.println(
+    "AUTHENTICATION ENTRY POINT: " +
+    request.getRequestURI()
+);
             })
 
             .accessDeniedHandler((request, response, accessDeniedException) -> {
@@ -123,6 +127,15 @@ public class SecurityConfig {
                     "{\"status\":403,\"message\":\"Access denied.\"}"
                 );
             }
+            System.out.println(
+    "ACCESS DENIED HANDLER: " +
+    request.getRequestURI()
+);
+
+System.out.println(
+    "AUTHENTICATION: " +
+    SecurityContextHolder.getContext().getAuthentication()
+);
         })
         )
             .formLogin(AbstractHttpConfigurer::disable)

@@ -36,8 +36,9 @@ public class AdminService {
     public void authenticate (String email, String password){
         if (email == null || 
             email.isBlank() || 
-            password.isBlank() || 
-            password == null) {
+            password == null ||
+            password.isBlank()
+            ) {
             throw new BadCredentialsException(
                 "Invalid admin email or password"
             );

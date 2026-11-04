@@ -17,14 +17,12 @@ async function api(url, options = {}) {
         // Identify only protected admin session requests.
         const isAdminSessionRequest =
             url.startsWith("/api/v1/admin/") &&
-            !url.includes("/login") &&
-            !url.includes("/csrf");
+            !url.includes("/login");
 
         // Identify only protected merchant session requests.
         const isMerchantSessionRequest =
             url.startsWith("/api/v1/merchants/") &&
             !url.includes("/login") &&
-            !url.includes("/csrf") &&
             !url.includes("/api-key");
 
         // Redirect only for session authentication failures.

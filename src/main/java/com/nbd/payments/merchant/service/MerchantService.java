@@ -92,7 +92,7 @@ public class MerchantService {
                 password.length()>72 ||
                 password.getBytes(StandardCharsets.UTF_8).length>72) {
             throw new IllegalArgumentException(
-                "Password must be at least 8 characters and followed by special characters"
+                "Password must be between 8 and 72 characters "
             );
         }
 
@@ -148,7 +148,7 @@ public class MerchantService {
             String password
     ) {
         
-        try{
+        // try{
 
             if (
                 email == null || 
@@ -192,11 +192,11 @@ public class MerchantService {
 
         return merchant;
 
-        }catch(ResponseStatusException |
-                BadCredentialsException |
-                DisabledException ex){
-                    throw ex;
-                }
+        // }catch(ResponseStatusException |
+        //         BadCredentialsException |
+        //         DisabledException ex){
+        //             throw ex;
+        //         }
     }
     
     @Transactional(readOnly = true)
