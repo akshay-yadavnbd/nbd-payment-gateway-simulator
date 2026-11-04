@@ -73,13 +73,36 @@ public class Payment {
         this.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
     }
 
+    public void  recordFailedAttempt(String errorCode){
+        if (!"PENDING".equals(this.status)) {
+            throw new IllegalStateException(
+                "Only pending payments can record failed attempts"
+            );
+        }
+        //this.status = "PENDING";
+        this.errorCode = errorCode;
+        this.settledAmountPaise = 0L;
+    }
+
     public void markSuccess() {
+        if (!"PENDING".equals(this.status)) {
+            throw new IllegalStateException(
+                "Only pending payments can be completed"
+            );
+        }
+
         this.status = "SUCCESS";
         this.errorCode = null;
         this.settledAmountPaise = this.amountPaise;
     }
 
     public void markFailed(String errorCode) {
+        if (!"PENDING".equals(this.status)) {
+            throw new IllegalStateException(
+                "Only pending payments can be marked failed"
+            );
+        }
+
         this.status = "FAILED";
         this.errorCode = errorCode;
         this.settledAmountPaise = 0L;

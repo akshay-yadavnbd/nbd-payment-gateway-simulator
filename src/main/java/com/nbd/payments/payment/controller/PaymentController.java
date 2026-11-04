@@ -4,6 +4,7 @@ package com.nbd.payments.payment.controller;
 import com.nbd.payments.merchant.entity.Merchant;
 import com.nbd.payments.merchant.service.MerchantApiKeyService;
 import com.nbd.payments.payment.dto.CardPaymentRequest;
+import com.nbd.payments.payment.dto.CardPaymentResponse;
 import com.nbd.payments.payment.dto.CreatePaymentRequest;
 import com.nbd.payments.payment.dto.PaymentResponse;
 import com.nbd.payments.payment.service.PaymentService;
@@ -67,7 +68,7 @@ public class PaymentController {
         }
         
         @PostMapping("/checkout/{checkoutToken}/pay")
-        public ResponseEntity<PaymentResponse> pay(
+        public ResponseEntity<CardPaymentResponse> pay(
                 @PathVariable String checkoutToken,
                 @Valid @RequestBody CardPaymentRequest request
         ) {
