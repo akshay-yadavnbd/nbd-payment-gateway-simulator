@@ -34,9 +34,12 @@ public class AdminService {
     }
 
     public void authenticate (String email, String password){
-        if (email == null || password == null) {
+        if (email == null || 
+            email.isBlank() || 
+            password.isBlank() || 
+            password == null) {
             throw new BadCredentialsException(
-                "Invalid admin credentials"
+                "Invalid admin email or password"
             );
             
         }
@@ -52,7 +55,7 @@ public class AdminService {
 
         if (!emailMatches || !passwordMatches) {
             throw new BadCredentialsException(
-                "Invalid admin credentials"
+                "Invalid admin email or password"
             );
         }
     }
