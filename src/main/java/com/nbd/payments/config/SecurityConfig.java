@@ -77,6 +77,16 @@ public class SecurityConfig {
                     new HttpSessionSecurityContextRepository()
                 )
             )
+
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    response.setContentType("application/json");
+                    response.getWriter().write(
+                        "{\"status\":401,\"message\":\"Session expired. Please log in again.\"}"
+                    );
+                })
+            )
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable);
 

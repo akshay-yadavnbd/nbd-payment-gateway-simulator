@@ -150,6 +150,23 @@
         showMessage(id, text, ok);
     }
 
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("sessionExpired") === "true") {
+
+        showMessage(
+            "loginMessage",
+            "Your session has expired. Please log in again.",
+            false
+        );
+
+        window.history.replaceState(
+            {},
+            document.title,
+            "/merchant.html"
+        );
+    }
+
     function showDashboard(merchant) {
         $("authSection").classList.add("hidden");
         $("dashboard").classList.remove("hidden");
@@ -186,17 +203,12 @@
     }
 
     function toPaise(value) {
-        // Parse decimal rupees exactly to avoid floating-point errors.
-        if (!/^\d+(\.\d{1,2})?$/.test(value)) {
-            throw new Error("Enter a valid amount with up to 2 decimals.");
-        }
+
         const [rupees, decimals = ""] = value.split(".");
+
         const amount = BigInt(rupees) * 100n +
             BigInt(decimals.padEnd(2, "0"));
 
-        if (amount <= 0n || amount > BigInt(Number.MAX_SAFE_INTEGER)) {
-            throw new Error("Invalid payment amount.");
-        }
         return Number(amount);
     }
 

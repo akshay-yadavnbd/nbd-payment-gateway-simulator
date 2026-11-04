@@ -64,9 +64,9 @@ public class PaymentService {
                 );
                 }
 
-                if (amountPaise == null || amountPaise <= 0) {
+                if (amountPaise == null || amountPaise < 100L) {
                 throw new IllegalArgumentException(
-                        "Invalid payment amount"
+                        "Enter a valid payment amount, minimum amount is ₹1.00"
                 );
                 }
 

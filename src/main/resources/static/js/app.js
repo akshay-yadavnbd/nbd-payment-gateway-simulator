@@ -11,23 +11,29 @@ async function api(url, options = {}) {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
+        if (response.status === 401) {
 
-        let errorMessage =
-            data.message ||
-            data.detail ||
-            `Request failed (${response.status})`;
+            const path = window.location.pathname;
 
-        // Handle field validation errors
-        if (data.fields && typeof data.fields === "object") {
-            const fieldMessages = Object.values(data.fields)
-                .filter(Boolean);
+            if (url.includes("/api/v1/admin/") &&
+                !url.includes("/login")) {
 
-            if (fieldMessages.length > 0) {
-                errorMessage = fieldMessages.join("\n");
+                window.location.replace(
+                    "/admin.html?sessionExpired=true"
+                );
+
+            } else if (url.includes("/api/v1/merchants/") &&
+                    !url.includes("/login")) {
+
+                window.location.replace(
+                    "/merchant.html?sessionExpired=true"
+                );
             }
-        }
 
-        throw new Error(errorMessage);
+            throw new Error(
+                "Your session has expired. Please log in again."
+            );
+        }
     }
 
     return data;

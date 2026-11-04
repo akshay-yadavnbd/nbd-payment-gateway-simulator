@@ -107,6 +107,23 @@
 
 <script>
 
+    const params = new URLSearchParams(window.location.search);
+
+if (params.get("sessionExpired") === "true") {
+
+    showMessage(
+        "adminLoginMessage",
+        "Your session has expired. Please log in again.",
+        false
+    );
+
+    window.history.replaceState(
+        {},
+        document.title,
+        "/admin.html"
+    );
+}
+
 // Admin Login
 document.getElementById("adminLoginForm")
     .addEventListener("submit", async (event) => {

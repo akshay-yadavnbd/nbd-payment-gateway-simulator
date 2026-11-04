@@ -105,5 +105,17 @@ public class ApiExceptionHandler {
                 );
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
+            IllegalArgumentException ex
+    ) {
+        return ResponseEntity
+                .badRequest()
+                .body(Map.of(
+                        "status", 400,
+                        "message", ex.getMessage()
+                ));
+    }
+
     
 }
