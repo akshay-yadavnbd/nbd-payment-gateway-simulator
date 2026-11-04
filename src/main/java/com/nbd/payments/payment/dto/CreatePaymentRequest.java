@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Pattern;
 public record CreatePaymentRequest(
 
     @NotNull
-    @Min(value = 1, message = "Amount must be greater than zero")
+    @Min(value = 1, message = "Amount can't be blank, minimum amount should be ₹1.00")
     Long amountPaise,
 
     @NotNull

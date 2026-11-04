@@ -1,4 +1,6 @@
+
 async function api(url, options = {}) {
+
     const response = await fetch(url, {
         credentials: "same-origin",
         ...options,
@@ -12,30 +14,50 @@ async function api(url, options = {}) {
 
     if (!response.ok) {
 
-        if (
-            response.status === 401 &&
-            !url.includes("/login")
-        ) {
-            const path = window.location.pathname;
+        // Identify only protected admin session requests.
+        const isAdminSessionRequest =
+            url.startsWith("/api/v1/admin/") &&
+            !url.includes("/login") &&
+            !url.includes("/csrf");
 
-            if (path === "/admin.html") {
+        // Identify only protected merchant session requests.
+        const isMerchantSessionRequest =
+            url.startsWith("/api/v1/merchants/") &&
+            !url.includes("/login") &&
+            !url.includes("/csrf") &&
+            !url.includes("/api-key");
+
+        // Redirect only for session authentication failures.
+        if (response.status === 401) {
+
+            if (
+                window.location.pathname === "/admin.html" &&
+                isAdminSessionRequest
+            ) {
                 window.location.replace(
                     "/admin.html?sessionExpired=true"
                 );
-            } 
-            else if (path === "/merchant.html") {
+            }
+
+            else if (
+                window.location.pathname === "/merchant.html" &&
+                isMerchantSessionRequest
+            ) {
                 window.location.replace(
                     "/merchant.html?sessionExpired=true"
                 );
             }
         }
 
+        // Preserve backend error messages.
         let errorMessage =
             data.message ||
             data.detail ||
             `Request failed (${response.status})`;
 
+        // Handle backend field validation errors.
         if (data.fields && typeof data.fields === "object") {
+
             const fieldMessages = Object.values(data.fields)
                 .filter(Boolean);
 
@@ -50,14 +72,21 @@ async function api(url, options = {}) {
     return data;
 }
 
+
 function showMessage(elementId, message, success = true) {
+
     const element = document.getElementById(elementId);
+
     element.textContent = message;
     element.style.whiteSpace = "pre-line";
-    element.className = "message " + (success ? "success" : "error");
+
+    element.className =
+        "message " + (success ? "success" : "error");
 }
 
+
 async function getCsrfToken(type) {
+
     const data = await api(`/api/v1/${type}/csrf`);
 
     return {
@@ -65,11 +94,15 @@ async function getCsrfToken(type) {
     };
 }
 
+
 function formatAmount(paise) {
+
     return "₹" + (Number(paise) / 100).toFixed(2);
 }
 
+
 function escapeHtml(value) {
+
     return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
