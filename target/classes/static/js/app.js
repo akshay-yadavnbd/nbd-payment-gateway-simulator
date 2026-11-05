@@ -70,7 +70,6 @@ async function api(url, options = {}) {
     return data;
 }
 
-
 function showMessage(elementId, message, success = true) {
 
     const element = document.getElementById(elementId);
@@ -82,7 +81,6 @@ function showMessage(elementId, message, success = true) {
         "message " + (success ? "success" : "error");
 }
 
-
 async function getCsrfToken(type) {
 
     const data = await api(`/api/v1/${type}/csrf`);
@@ -92,12 +90,10 @@ async function getCsrfToken(type) {
     };
 }
 
-
 function formatAmount(paise) {
 
     return "₹" + (Number(paise) / 100).toFixed(2);
 }
-
 
 function escapeHtml(value) {
 

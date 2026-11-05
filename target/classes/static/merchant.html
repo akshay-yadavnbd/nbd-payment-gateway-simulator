@@ -368,9 +368,14 @@
             }
         });
 
-        // Create payment
+        // Create payment with idempotency protection
+
+        let pendingIdempotencyKey = null;
+        let pendingPaymentAmount = null;
+
         $("paymentForm").addEventListener("submit", async event => {
             event.preventDefault();
+
             const button = event.submitter;
             setBusy(button, true);
 
@@ -378,23 +383,37 @@
                 const amountPaise = toPaise($("paymentAmount").value);
                 const apiKey = getKey();
 
+                if (!apiKey) {
+                    throw new Error("Please enter or generate your Merchant API Key.");
+                }
+
+                // Reuse the same key when retrying the same payment request.
+                if (
+                    pendingIdempotencyKey === null ||
+                    pendingPaymentAmount !== amountPaise
+                ) {
+                    pendingIdempotencyKey = crypto.randomUUID();
+                    pendingPaymentAmount = amountPaise;
+                }
+
                 const result = await api("/api/v1/payments", {
                     method: "POST",
-                    headers: { "X-API-Key": apiKey },
+                    headers: {
+                        "X-API-Key": apiKey,
+                        "Idempotency-Key": pendingIdempotencyKey
+                    },
                     body: JSON.stringify({
                         amountPaise,
                         currency: "INR"
                     })
                 });
 
-
                 if (
                     typeof result.checkoutToken !== "string" ||
                     !/^[0-9a-f]{64}$/.test(result.checkoutToken)
                 ) {
                     throw new Error(
-                        "Payment was created but no valid checkout token was returned. " +
-                        "Check PaymentResponse.java."
+                        "Payment was created but no valid checkout token was returned."
                     );
                 }
 
@@ -405,12 +424,22 @@
                 $("checkoutLink").value = checkoutUrl;
                 $("checkoutSection").classList.remove("hidden");
 
-                message("paymentMessage",
-                    "Payment request created: " + result.paymentId);
+                message(
+                    "paymentMessage",
+                    "Payment request created: " + result.paymentId
+                );
+
+                // Clear the key after successful creation.
+                pendingIdempotencyKey = null;
+                pendingPaymentAmount = null;
+
+                $("paymentForm").reset();
 
                 await loadMerchantData();
+
             } catch (error) {
                 message("paymentMessage", error.message, false);
+
             } finally {
                 setBusy(button, false);
             }
