@@ -38,8 +38,18 @@ public class PaymentController {
         @PostMapping
         public ResponseEntity<PaymentResponse> createPayment(
                 @RequestHeader("X-API-Key") String apiKey,
+                @RequestHeader (
+                                value =  "Idempotency-key", 
+                                required = false
+                                ) String idempotencyKey,
                 @Valid @RequestBody CreatePaymentRequest request
         ) {
+                if (idempotencyKey == null || idempotencyKey.isBlank()) {
+                        throw new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Idempotency key header is required "
+                        );
+                }
         Merchant apiKeyMerchant =
                 apiKeyService.authenticateApiKey(apiKey);
         Authentication authentication =
@@ -60,7 +70,8 @@ public class PaymentController {
         }
         PaymentResponse response = paymentService.createPayment(
                 apiKeyMerchant,
-                request.amountPaise()
+                request.amountPaise(),
+                idempotencyKey
         );
         return ResponseEntity
                 .status(HttpStatus.CREATED)

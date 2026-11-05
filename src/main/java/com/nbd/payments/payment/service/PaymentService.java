@@ -13,7 +13,9 @@ import com.nbd.payments.payment.dto.CardPaymentResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
@@ -30,17 +32,24 @@ public class PaymentService {
     private final SecureRandom secureRandom = new SecureRandom();
     private final PaymentScenarioSimulator simulator;
     private final PaymentAttemptRepository paymentAttemptRepository;
+    private final TransactionTemplate transactionTemplate;
 
 
     
         public PaymentService(
                 PaymentRepository paymentRepository,
                 PaymentScenarioSimulator simulator,
-                PaymentAttemptRepository paymentAttemptRepository
+                PaymentAttemptRepository paymentAttemptRepository,
+                TransactionTemplate transactionTemplate
         ) {
                 this.paymentRepository = paymentRepository;
                 this.simulator = simulator;
                 this.paymentAttemptRepository = paymentAttemptRepository;
+                this.transactionTemplate = transactionTemplate;
+
+                this.transactionTemplate.setPropagationBehavior(
+                        org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW
+                );
         }
 
         private String generateAttemptId(){
@@ -52,10 +61,11 @@ public class PaymentService {
         }
 
 
-        @Transactional
+        //@Transactional
         public PaymentResponse createPayment(
                 Merchant merchant,
-                Long amountPaise
+                Long amountPaise,
+                String idempotencyKey
         ) {
 
                 if (merchant == null || !"ACTIVE".equals(merchant.getStatus())) {
@@ -70,28 +80,72 @@ public class PaymentService {
                 );
                 }
 
+                if (idempotencyKey == null ||
+                        idempotencyKey.isBlank() ||
+                        idempotencyKey.length()>100
+                ) {
+                        throw new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Valid Idempotency-key header is required"
+                        );
+                }
+
+                var existingPayment = paymentRepository
+                                .findByMerchant_IdAndIdempotencyKey(
+                                        merchant.getId(), 
+                                        idempotencyKey
+                                );
+                if (existingPayment.isPresent()) {
+                        Payment payment = existingPayment.get();
+
+                        if (!payment.getAmountPaise().equals(amountPaise) ||
+                                !"INR".equals(payment.getCurrency())) {
+                                
+                                        throw new ResponseStatusException(
+                                                HttpStatus.CONFLICT,
+                                                "Idempotency key already used with different payment details"
+                                        );
+                        }
+                        return PaymentResponse.from(payment);
+                }
+
+                //generating unique payment ID
                 String paymentId = "PAY-" +
                         UUID.randomUUID()
                                 .toString()
                                 .replace("-", "")
                                 .toUpperCase();
 
+                //generating secure checkout token 
                 byte[] randomBytes = new byte[32];
                 secureRandom.nextBytes(randomBytes);
 
                 String checkoutToken = HexFormat.of()
                         .formatHex(randomBytes);
 
-                Payment payment = new Payment(
-                        paymentId,
-                        merchant,
-                        checkoutToken,
-                        amountPaise
-                );
+                try{
+                        return transactionTemplate.execute(status -> {
+                                ////payment creation
+                                Payment payment = new Payment(
+                                paymentId,
+                                merchant,
+                                checkoutToken,
+                                amountPaise
+                        );
 
-                Payment savedPayment = paymentRepository.saveAndFlush(payment);
+                        payment.setIdempotencyKey(idempotencyKey);
+                        Payment savedPayment = 
+                                        paymentRepository.saveAndFlush(payment);
+                        return PaymentResponse.from(savedPayment);
+                        });
+                }catch (DataIntegrityViolationException exception){
+                        return findExistingPayment(
+                                                merchant.getId(), 
+                                                idempotencyKey, 
+                                                amountPaise
+                                        );
+                }
 
-                return PaymentResponse.from(savedPayment);
         }
 
         //Updated this method from PaymentResponse to CardPaymentResponse
@@ -311,6 +365,33 @@ public class PaymentService {
                         "attemptsUsed", attemptsUsed,
                         "attemptsRemaining", Math.max(0, 5-attemptsUsed)
                 );
+        }
+
+        private  PaymentResponse findExistingPayment(
+                Long merchantId,
+                String idempotencyKey,
+                Long amountPaise
+        ){
+                Payment payment = paymentRepository
+                        .findByMerchant_IdAndIdempotencyKey(
+                                merchantId,
+                                idempotencyKey
+                        )
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.CONFLICT,
+                                        "Payment creation conflict. Retry using the same Idempotency-key"
+                                )        
+                );
+
+                if (!payment.getAmountPaise().equals(amountPaise) ||
+                        !"INR".equals(payment.getCurrency())) {
+                        throw new ResponseStatusException(
+                                HttpStatus.CONFLICT,
+                                "Idempotency key already used with different payment details"
+                        );
+                }
+                return PaymentResponse.from(payment);
         }
 
 }

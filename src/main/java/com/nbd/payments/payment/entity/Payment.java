@@ -47,6 +47,9 @@ public class Payment {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Column(name = "idempotency_key", length = 100)
+    private String idempotencyKey;
+
     protected Payment() {}
 
     public Payment(
@@ -153,5 +156,12 @@ public class Payment {
     }
     public OffsetDateTime getUpdatedAt() { 
         return updatedAt; 
+    }
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 }

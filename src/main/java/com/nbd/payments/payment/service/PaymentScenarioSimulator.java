@@ -63,16 +63,16 @@ public class PaymentScenarioSimulator {
                     "Payment successful";
 
             case "INSUFFICIENT_FUNDS" -> 
-                    "Insufficient balance";
+                    "You do not have enough balance to make this transaction.";
 
             case "AUTHENTICATION_FAILED" ->
                     "Card authentication failed. Please retry.";
 
             case "LIMIT_EXCEEDED" -> 
-                    "Transaction limit exceeded";
+                    "Your card transaction limit has been exceeded";
 
             case "FRAUD_SUSPECTED" ->
-                    "Transaction declined by issuing bank";
+                    "Transaction declined by the bank";
 
             case "ACCOUNT_RESTRICTED" -> 
                     "Card is restricted";

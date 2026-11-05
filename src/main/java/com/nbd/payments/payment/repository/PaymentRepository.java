@@ -20,7 +20,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByPaymentId(String paymentId);
 
     Optional<Payment> findByCheckoutToken(String checkoutToken);
-
         
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Payment p WHERE p.checkoutToken = :token")
@@ -50,6 +49,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findForRefund(
             @Param("paymentId") String paymentId,
             @Param("merchantId") Long merchantId
+    );
+
+    Optional<Payment> findByMerchant_IdAndIdempotencyKey(
+            Long merchantId,
+            String idempotencyKey
     );
 
 }
