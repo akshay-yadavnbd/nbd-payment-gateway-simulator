@@ -40,6 +40,12 @@ public class Merchant {
     )
     private String email;
 
+    @Column(
+        name = "email_verified",
+        nullable = false
+    )
+    private boolean emailVerified = false;
+
     @Column (
         name = "Status",
         nullable = false,
@@ -100,6 +106,10 @@ public class Merchant {
 
     public String getEmail(){
         return email;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
     }
 
     public String getStatus(){

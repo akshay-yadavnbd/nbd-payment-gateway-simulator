@@ -81,12 +81,20 @@ public class AdminService {
                                         "Merchant not found"
                                 )
                         );
+
+        if ("ACTIVE".equals(newStatus.name())
+                && !merchant.isEmailVerified()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.FORBIDDEN,
+                "Merchant email must be verified before activation."
+            );
+        }
         merchant.setStatus(newStatus.name());
 
                         
-        Merchant updMerchant= 
+        Merchant updatedMerchant= 
                         merchantRepository.saveAndFlush(merchant);
         
-        return AdminMerchantResponse.from(updMerchant);
+        return AdminMerchantResponse.from(updatedMerchant);
     }
 }

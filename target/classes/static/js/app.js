@@ -70,6 +70,7 @@ async function api(url, options = {}) {
     return data;
 }
 
+
 function showMessage(elementId, message, success = true) {
 
     const element = document.getElementById(elementId);

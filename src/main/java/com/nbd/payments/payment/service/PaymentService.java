@@ -33,8 +33,6 @@ public class PaymentService {
     private final PaymentScenarioSimulator simulator;
     private final PaymentAttemptRepository paymentAttemptRepository;
     private final TransactionTemplate transactionTemplate;
-
-
     
         public PaymentService(
                 PaymentRepository paymentRepository,
@@ -60,7 +58,6 @@ public class PaymentService {
                                 .toUpperCase();
         }
 
-
         //@Transactional
         public PaymentResponse createPayment(
                 Merchant merchant,
@@ -75,9 +72,9 @@ public class PaymentService {
                 }
 
                 if (amountPaise == null || amountPaise < 100L) {
-                throw new IllegalArgumentException(
-                        "Enter a valid payment amount, minimum amount is ₹1.00"
-                );
+                        throw new IllegalArgumentException(
+                                "Enter a valid payment amount, minimum amount is ₹1.00"
+                        );
                 }
 
                 if (idempotencyKey == null ||
@@ -251,15 +248,15 @@ public class PaymentService {
         }
 
         return new CardPaymentResponse(
-                payment.getPaymentId(),
-                attempt.getAttemptId(),
-                payment.getStatus(),
-                attempt.getStatus(),
-                errorCode,
-                message,
-                attemptNumber,
-                5 - attemptNumber
-        );
+                        payment.getPaymentId(),
+                        attempt.getAttemptId(),
+                        payment.getStatus(),
+                        attempt.getStatus(),
+                        errorCode,
+                        message,
+                        attemptNumber,
+                        5 - attemptNumber
+                );
         }
 
         @Transactional (readOnly = true)
@@ -296,10 +293,10 @@ public class PaymentService {
                         );
 
                 if (!"SUCCESS".equals(payment.getStatus())) {
-                throw new ResponseStatusException(
-                        HttpStatus.CONFLICT,
-                        "Only successful payments can be refunded"
-                );
+                        throw new ResponseStatusException(
+                                HttpStatus.CONFLICT,
+                                "Only successful payments can be refunded"
+                        );
                 }
 
                 payment.markRefunded();
@@ -323,35 +320,35 @@ public class PaymentService {
         public Map<String, Object> getCheckoutDetails(String checkoutToken) {
 
                 Payment payment = paymentRepository
-                        .findByCheckoutToken(checkoutToken)
-                        .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Checkout not found"
-                        )
+                                .findByCheckoutToken(checkoutToken)
+                                .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Checkout not found"
+                                )
                         );
 
                 if (!"PENDING".equals(payment.getStatus())) {
-                throw new ResponseStatusException(
-                        HttpStatus.CONFLICT,
-                        "Checkout is no longer available"
-                );
+                        throw new ResponseStatusException(
+                                HttpStatus.CONFLICT,
+                                "Checkout is no longer available"
+                        );
                 }
 
                 if (payment.getCreatedAt().isBefore(
                         OffsetDateTime.now(ZoneOffset.UTC).minusMinutes(15)
                 )) {
-                throw new ResponseStatusException(
-                        HttpStatus.GONE,
-                        "Checkout expired"
-                );
+                        throw new ResponseStatusException(
+                                HttpStatus.GONE,
+                                "Checkout expired"
+                        );
                 }
 
                 if (!"ACTIVE".equals(payment.getMerchant().getStatus())) {
-                throw new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "Merchant is not active"
-                );
+                        throw new ResponseStatusException(
+                                HttpStatus.FORBIDDEN,
+                                "Merchant is not active"
+                        );
                 }
 
                 long attemptsUsed =

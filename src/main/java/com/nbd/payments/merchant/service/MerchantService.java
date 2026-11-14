@@ -1,11 +1,12 @@
-
 package com.nbd.payments.merchant.service;
 
+import com.nbd.payments.email.service.EmailVerificationService;
 import com.nbd.payments.merchant.entity.Merchant;
 import com.nbd.payments.merchant.entity.MerchantCredential;
 import com.nbd.payments.merchant.repository.MerchantCredentialRepository;
 import com.nbd.payments.merchant.repository.MerchantRepository;
 import com.nbd.payments.merchant.exception.DuplicateMerchantException;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,15 +26,18 @@ public class MerchantService {
     private final MerchantRepository merchantRepository;
     private final MerchantCredentialRepository credentialRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
     public MerchantService(
             MerchantRepository merchantRepository,
             MerchantCredentialRepository credentialRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            EmailVerificationService emailVerificationService
         ) {
         this.merchantRepository = merchantRepository;
         this.credentialRepository = credentialRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailVerificationService = emailVerificationService;
     }
 
     //Merchant registration
@@ -130,6 +134,11 @@ public class MerchantService {
 
             credentialRepository.saveAndFlush(credential);
 
+            emailVerificationService.sendVerificationEmail(
+                savedMerchant.getEmail(), 
+                "MERCHANT"
+            );
+
             return savedMerchant;
             //return merchantRepository.saveAndFlush(merchant);
         } catch (DataIntegrityViolationException ex) {
@@ -184,6 +193,12 @@ public class MerchantService {
 
         Merchant merchant = credential.getMerchant();
 
+        if (!merchant.isEmailVerified()) {
+            throw new DisabledException(
+                "Email not verified. Please verify your email before logging in."
+            );
+        }
+
         if (!"ACTIVE".equals(merchant.getStatus())) {
             throw new DisabledException(
                 "Account is not active"
@@ -191,12 +206,6 @@ public class MerchantService {
         }
 
         return merchant;
-
-        // }catch(ResponseStatusException |
-        //         BadCredentialsException |
-        //         DisabledException ex){
-        //             throw ex;
-        //         }
     }
     
     @Transactional(readOnly = true)
@@ -205,8 +214,7 @@ public class MerchantService {
         Merchant merchant = merchantRepository
                 .findByMerchantId(merchantId)
                 .orElseThrow(() ->
-                        new org.springframework.security.authentication
-                                .BadCredentialsException(
+                        new BadCredentialsException(
                                         "Merchant not found"
                                 )
                 );

@@ -229,8 +229,8 @@
                 });
 
                 message("registerMessage",
-                    "Registered successfully. Merchant ID: " +
-                    result.merchantId + ". Await admin approval.");
+                    "Registration submitted. Merchant ID: " +
+                    result.merchantId + ". Please check and verify your email within 30 minutes. Your account will then be eligible for admin approval.");
                 $("registerForm").reset();
             } catch (error) {
                 message("registerMessage", error.message, false);

@@ -12,7 +12,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
 
 @Configuration
@@ -42,20 +44,24 @@ public class SecurityConfig {
                     "/payment.html",
                     "/merchant.html",
                     "/admin.html",
+                    "/email-verification.html",
                     "/css/**",
                     "/js/**"
                 ).permitAll()
 
                 .requestMatchers(
                     HttpMethod.GET,
-                    "/api/v1/health"
+                    "/api/v1/health",
+                    "/api/v1/email-verification/verify"
                 ).permitAll()
 
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/v1/merchants",
                     "/api/v1/merchants/login",
-                    "/api/v1/admin/login"
+                    "/api/v1/admin/login",
+                    "/api/v1/payments/checkout/*/pay",
+                    "/api/v1/payments"
                 ).permitAll()
 
                 .requestMatchers("/api/v1/admin/**")
@@ -63,16 +69,6 @@ public class SecurityConfig {
 
                 .requestMatchers("/api/v1/merchants/**")
                 .hasRole("MERCHANT")
-
-                .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/v1/payments"
-                ).permitAll()
-
-                .requestMatchers(
-                    HttpMethod.POST,
-                    "/api/v1/payments/checkout/*/pay"
-                ).permitAll()
 
                 .anyRequest().authenticated()
             )
@@ -92,51 +88,18 @@ public class SecurityConfig {
                 response.getWriter().write(
                     "{\"status\":401,\"message\":\"Session expired. Please log in again.\"}"
                 );
-                System.out.println(
-    "AUTHENTICATION ENTRY POINT: " +
-    request.getRequestURI()
-);
             })
 
             .accessDeniedHandler((request, response, accessDeniedException) -> {
 
-            Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-            boolean anonymous =
-                authentication == null ||
-                !authentication.isAuthenticated() ||
-                new AuthenticationTrustResolverImpl()
-                    .isAnonymous(authentication);
-
-            if (anonymous) {
-
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.setContentType("application/json");
-
-                response.getWriter().write(
-                    "{\"status\":401,\"message\":\"Session expired. Please log in again.\"}"
-                );
-
-            } else {
-
                 response.setStatus(HttpStatus.FORBIDDEN.value());
                 response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
 
                 response.getWriter().write(
-                    "{\"status\":403,\"message\":\"Access denied.\"}"
+                    "{\"status\":403,\"message\":\"Access denied. You do not have permission to perform this action.\"}"
                 );
-            }
-            System.out.println(
-    "ACCESS DENIED HANDLER: " +
-    request.getRequestURI()
-);
-
-System.out.println(
-    "AUTHENTICATION: " +
-    SecurityContextHolder.getContext().getAuthentication()
-);
-        })
+            })
         )
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable);

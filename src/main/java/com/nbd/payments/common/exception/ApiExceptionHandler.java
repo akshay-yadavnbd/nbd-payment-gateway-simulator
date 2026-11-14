@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.mail.MailException;
 
 import com.nbd.payments.merchant.exception.DuplicateMerchantException;
 
@@ -116,6 +117,22 @@ public class ApiExceptionHandler {
                         "message", ex.getMessage()
                 ));
     }
+
+    @ExceptionHandler(MailException.class)
+    public ResponseEntity<Map<String, Object>> handleMailException(
+            MailException ex
+    ) {
+
+        // Log the actual SMTP failure on the server.
+        ex.printStackTrace();
+
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of(
+                        "error", "EMAIL_DELIVERY_FAILED",
+                        "message", "Unable to send verification email. Please try again later."
+                ));
+}
 
     
 }

@@ -8,6 +8,9 @@ C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\common\excepti
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\config\HealthController.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\config\PasswordConfig.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\config\SecurityConfig.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\email\controller\EmailVerificationController.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\email\service\EmailService.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\email\service\EmailVerificationService.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\merchant\controller\MerchantController.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\merchant\dto\MerchantLoginRequest.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\merchant\dto\MerchantLoginResponse.java

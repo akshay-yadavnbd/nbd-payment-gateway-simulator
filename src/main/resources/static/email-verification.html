@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>NBD Payments - Email Verification</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .verification-card {
+            max-width: 550px;
+            margin: 60px auto;
+            text-align: center;
+        }
+
+        .verification-card h2 {
+            margin-bottom: 12px;
+        }
+
+        .verification-card p {
+            line-height: 1.6;
+        }
+
+        .verification-icon {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .verification-actions {
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <nav>
+        <a href="/payment.html">Payment</a>
+        <a href="/merchant.html">Merchant</a>
+        <a href="/admin.html">Admin</a>
+    </nav>
+
+    <h1>NBD Payments</h1>
+
+    <div class="card verification-card">
+
+        <div id="verificationContent">
+
+            <div class="verification-icon">⏳</div>
+
+            <h2>Verifying Your Email</h2>
+
+            <p>Please wait while we verify your email address.</p>
+
+        </div>
+
+        <div class="verification-actions">
+            <a href="/merchant.html" id="merchantLink">
+                Go to Merchant Login
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+"use strict";
+
+const content = document.getElementById("verificationContent");
+
+const params = new URLSearchParams(window.location.search);
+
+const status = params.get("status");
+
+const messages = {
+
+    success: {
+        icon: "✓",
+        title: "Email Verified Successfully!",
+        message:
+            "Your email address has been verified successfully. " +
+            "Your account is now waiting for admin approval.",
+        color: "success"
+    },
+
+    expired: {
+        icon: "⌛",
+        title: "Verification Link Expired",
+        message:
+            "Your verification link has expired. " +
+            "Please request a new verification email.",
+        color: "error"
+    },
+
+    invalid: {
+        icon: "✕",
+        title: "Verification Failed",
+        message:
+            "This verification link is invalid or has already been used.",
+        color: "error"
+    },
+
+    error: {
+        icon: "!",
+        title: "Something Went Wrong",
+        message:
+            "We could not verify your email address. Please try again later.",
+        color: "error"
+    }
+};
+
+const result = messages[status] || messages.error;
+
+const icon = document.createElement("div");
+icon.className = "verification-icon";
+icon.textContent = result.icon;
+
+const heading = document.createElement("h2");
+heading.textContent = result.title;
+
+const paragraph = document.createElement("p");
+paragraph.className = "message " + result.color;
+paragraph.textContent = result.message;
+
+content.replaceChildren(icon, heading, paragraph);
+
+</script>
+
+</body>
+</html>

@@ -7,6 +7,7 @@ com\nbd\payments\payment\entity\Payment.class
 com\nbd\payments\payment\service\PaymentScenarioSimulator.class
 com\nbd\payments\config\SecurityConfig.class
 com\nbd\payments\payment\dto\CreatePaymentRequest.class
+com\nbd\payments\email\service\EmailVerificationService$VerificationRecord.class
 com\nbd\payments\merchant\repository\MerchantApiKeyRepository.class
 com\nbd\payments\payment\dto\CardPaymentRequest.class
 com\nbd\payments\payment\controller\PaymentController.class
@@ -28,10 +29,13 @@ com\nbd\payments\merchant\dto\MerchantLoginResponse.class
 com\nbd\payments\merchant\controller\MerchantController.class
 com\nbd\payments\payment\service\PaymentService.class
 com\nbd\payments\payment\entity\PaymentAttempt.class
+com\nbd\payments\email\controller\EmailVerificationController.class
 com\nbd\payments\admin\dto\MerchantStatus.class
 com\nbd\payments\merchant\repository\MerchantCredentialRepository.class
+com\nbd\payments\email\service\EmailService.class
 com\nbd\payments\common\exception\ApiExceptionHandler.class
 com\nbd\payments\merchant\dto\MerchantRegistrationResponse.class
 com\nbd\payments\merchant\dto\MerchantRegistrationRequest.class
 com\nbd\payments\merchant\service\MerchantApiKeyService.class
 com\nbd\payments\merchant\entity\MerchantCredential.class
+com\nbd\payments\email\service\EmailVerificationService.class
