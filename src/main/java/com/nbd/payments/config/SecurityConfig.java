@@ -52,7 +52,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     HttpMethod.GET,
                     "/api/v1/health",
-                    "/api/v1/email-verification/verify"
+                    "/api/v1/email-verification/verify",
+                    "/api/v1/email-verification/registration-status",
+                    "/api/v1/payments/checkout/*"
                 ).permitAll()
 
                 .requestMatchers(
@@ -61,11 +63,19 @@ public class SecurityConfig {
                     "/api/v1/merchants/login",
                     "/api/v1/admin/login",
                     "/api/v1/payments/checkout/*/pay",
-                    "/api/v1/payments"
+                    "/api/v1/payments",
+                    "/api/v1/email-verification/clear-authorization",
+                    "/api/v1/email-verification/send",
+                    "/api/v1/email-verification/request"
                 ).permitAll()
 
                 .requestMatchers("/api/v1/admin/**")
                 .hasRole("ADMIN")
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/v1/merchants/csrf"
+                ).permitAll()
 
                 .requestMatchers("/api/v1/merchants/**")
                 .hasRole("MERCHANT")

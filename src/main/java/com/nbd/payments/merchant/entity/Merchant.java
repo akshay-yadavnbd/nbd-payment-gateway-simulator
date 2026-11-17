@@ -66,6 +66,7 @@ public class Merchant {
     )
     private OffsetDateTime updatedAt;
 
+
     protected  Merchant(){
         //Required by JPA
     }
@@ -122,6 +123,10 @@ public class Merchant {
 
     public OffsetDateTime getUpdatedAt(){
         return updatedAt;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
     public void setBusinessName(String businessName){

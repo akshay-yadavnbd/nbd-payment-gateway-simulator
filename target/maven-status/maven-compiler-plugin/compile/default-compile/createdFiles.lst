@@ -6,6 +6,7 @@ com\nbd\payments\admin\controller\AdminController.class
 com\nbd\payments\payment\entity\Payment.class
 com\nbd\payments\payment\service\PaymentScenarioSimulator.class
 com\nbd\payments\config\SecurityConfig.class
+com\nbd\payments\email\service\EmailVerificationService$RegistrationAuthorization.class
 com\nbd\payments\payment\dto\CreatePaymentRequest.class
 com\nbd\payments\email\service\EmailVerificationService$VerificationRecord.class
 com\nbd\payments\merchant\repository\MerchantApiKeyRepository.class

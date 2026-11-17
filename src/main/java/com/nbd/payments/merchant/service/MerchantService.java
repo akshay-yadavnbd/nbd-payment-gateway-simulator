@@ -46,7 +46,8 @@ public class MerchantService {
     public Merchant registerMerchant(
             String businessName,
             String email,
-            String password
+            String password,
+            String authorizationToken
     ) {
 
         if (businessName == null || businessName.isBlank()) {
@@ -100,13 +101,17 @@ public class MerchantService {
             );
         }
 
-        if (merchantRepository.existsByEmailIgnoreCase(
-                normalizedEmail
-        )) {
-            throw new DuplicateMerchantException(
-                "Merchant email already registered"
-            );
+        if (merchantRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+
+                throw new DuplicateMerchantException(
+                    "Merchant email already registered"
+                );
         }
+
+        emailVerificationService.consumeRegistrationAuthorization(
+            normalizedEmail,
+            authorizationToken
+        );
 
         String merchantId = "MER-" +
                 UUID.randomUUID()
@@ -123,6 +128,7 @@ public class MerchantService {
         String passwordHash = passwordEncoder.encode(password);
 
         try {
+            merchant.setEmailVerified(true);
             Merchant savedMerchant = 
                     merchantRepository.saveAndFlush(merchant);
 
@@ -134,14 +140,9 @@ public class MerchantService {
 
             credentialRepository.saveAndFlush(credential);
 
-            emailVerificationService.sendVerificationEmail(
-                savedMerchant.getEmail(), 
-                "MERCHANT"
-            );
-
             return savedMerchant;
-            //return merchantRepository.saveAndFlush(merchant);
-        } catch (DataIntegrityViolationException ex) {
+
+        } catch (DataIntegrityViolationException exception) {
            
             throw new DuplicateMerchantException(
                 "Merchant registration conflicts with an existing record"
@@ -156,11 +157,8 @@ public class MerchantService {
             String email,
             String password
     ) {
-        
-        // try{
-
-            if (
-                email == null || 
+        if (
+            email == null || 
                 email.isBlank() || 
                 password == null || 
                 password.isBlank()) {

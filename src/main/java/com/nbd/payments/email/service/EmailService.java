@@ -22,13 +22,15 @@ public class EmailService {
 
         message.setFrom(fromEmail);
         message.setTo(toEmail);
-        message.setSubject("Verify your NBD Payments email");
+        message.setSubject("Verify your email for NBD Payments");
         message.setText(
                 "Hello,\n\n" +
+                "Thank you for choosing NBD Paymnets. \n\n" + 
                 "Please verify your email address by clicking the link below:\n\n" +
                 verificationLink + "\n\n" +
                 "This verification link expires in 30 minutes.\n\n" +
-                "If you did not request this, you can ignore this email.\n\n" +
+                "If you did not request this, you can safely ignore this email.\n\n" +
+                "Regards,\n" +
                 "NBD Payments"
         );
 

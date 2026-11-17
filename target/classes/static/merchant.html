@@ -6,18 +6,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NBD Payments - Merchant</title>
     <link rel="stylesheet" href="/css/style.css">
+
     <style>
-        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .actions button { width: auto; }
-        .hidden { display: none !important; }
-        .muted { color: #666; font-size: 13px; }
-        .key-box { overflow-wrap: anywhere; }
-        .table-wrap { overflow-x: auto; }
-        .small-btn { padding: 7px 10px; width: auto; }
+        .hidden {
+            display: none !important;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .actions button {
+            width: auto;
+        }
+
+        .muted {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .small-btn {
+            padding: 7px 10px;
+            width: auto;
+        }
+
+        .status-message {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        .success-message {
+            color: #176b36;
+            background: #e8f5ec;
+        }
+
+        .error-message {
+            color: #a12626;
+            background: #fdeaea;
+        }
+
+        .verified-banner {
+            padding: 15px;
+            background: #e8f5ec;
+            color: #176b36;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        input:disabled {
+            background: #eee;
+            cursor: not-allowed;
+        }
     </style>
 </head>
+
 <body>
+
 <div class="container">
+
     <nav>
         <a href="/payment.html">Payment</a>
         <a href="/admin.html">Admin</a>
@@ -25,491 +79,1223 @@
 
     <h1>NBD Payments — Merchant</h1>
 
+    <!-- AUTHENTICATION SECTION -->
+
     <div id="authSection">
-        <div class="card">
+
+        <!-- EMAIL VERIFICATION -->
+
+        <div class="card" id="verificationSection">
+
             <h2>Merchant Registration</h2>
+
+            <p>Enter your business email to begin registration.</p>
+
+            <form id="verificationForm">
+
+                <label for="verificationEmail">
+                    
+                </label>
+
+                <input
+                    id="verificationEmail"
+                    type="email"
+                    placeholder="Enter your business email"
+                    maxlength="254"
+                    required
+                >
+
+                <button type="submit" id="verifyEmailBtn">
+                    Verify Email
+                </button>
+
+            </form>
+
+            <div id="verificationMessage"> 
+                <button type="button" id="showLoginBtn" class="secondary">
+                    Already registered? Login
+                </button>
+            </div>
+
+        </div>
+
+        <!-- VERIFIED EMAIL REGISTRATION -->
+
+        <div class="card hidden" id="registrationSection">
+
+            <div class="verified-banner">
+                <h3>Email Verified Successfully!</h3>
+
+                <p>
+                    Email address verified.
+                    Please complete your merchant registration.
+                </p>
+            </div>
+
+            <h2>Complete Your Registration</h2>
+
             <form id="registerForm">
-                <input id="businessName" placeholder="Business name"
-                       maxlength="150">
-                <input id="registerEmail" type="email"
-                       placeholder="Email">
-                <input id="registerPassword" type="password"
-                       placeholder="Password" ><!--required -->
-                <button type="submit">Register</button>
+
+                <label for="businessName">
+                    Business Name
+                </label>
+
+                <input
+                    id="businessName"
+                    type="text"
+                    placeholder="Enter business name"
+                    maxlength="150"
+                    required
+                >
+
+                <label for="registerEmail">
+                    Verified Email Address
+                </label>
+
+                <input
+                    id="registerEmail"
+                    type="email"
+                    readonly
+                    required
+                >
+
+                <label for="registerPassword">
+                    Create Password
+                </label>
+
+                <input
+                    id="registerPassword"
+                    type="password"
+                    placeholder="Create your password"
+                    minlength="8"
+                    maxlength="72"
+                    required
+                >
+
+                <button type="submit" id="registerBtn">
+                    Register Merchant
+                </button>
+
             </form>
+
             <div id="registerMessage"></div>
+            <div id="existingMerchantActions" class="hidden">
+
+                <button
+                    type="button"
+                    id="goToLoginBtn"
+                    class="secondary">
+                    Go to Merchant Login
+                </button>
+
+            </div>
+
         </div>
 
-        <!--Merchant loging page-->
+        <!-- MERCHANT LOGIN -->
+        <div class="card hidden" id="loginSection">
 
-        <div class="card">
             <h2>Merchant Login</h2>
+
             <form id="loginForm">
-                <input id="loginEmail" type="email"
-                       placeholder="Email">
-                <input id="loginPassword" type="password"
-                       placeholder="Password">
-                <button type="submit">Login</button>
+
+                <label for="loginEmail">
+                    Email Address
+                </label>
+
+                <input
+                    id="loginEmail"
+                    type="email"
+                    placeholder="Enter email"
+                    
+                >
+
+                <label for="loginPassword">
+                    Password
+                </label>
+
+                <input
+                    id="loginPassword"
+                    type="password"
+                    placeholder="Enter password"
+                    
+                >
+
+                <button type="submit" id="loginBtn">
+                    Login
+                </button>
+
             </form>
+
             <div id="loginMessage"></div>
+
         </div>
+
     </div>
 
+    <!-- MERCHANT DASHBOARD -->
+
     <div id="dashboard" class="hidden">
-        <div class="card">
-            <div class="actions">
-                <h2 style="flex:1">Merchant Dashboard</h2>
-                <button id="refreshBtn" type="button">Refresh</button>
-                <button id="logoutBtn" type="button"
-                        class="secondary">Logout</button>
-            </div>
-            <p id="merchantIdentity"></p>
-            <h2 id="balanceText">Balance: ₹0.00</h2>
-            <div id="dashboardMessage"></div>
-        </div>
 
         <div class="card">
+
+            <div class="actions">
+
+                <h2 style="flex:1">
+                    Merchant Dashboard
+                </h2>
+
+                <button id="refreshBtn" type="button">
+                    Refresh
+                </button>
+
+                <button
+                    id="logoutBtn"
+                    type="button"
+                    class="secondary"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+            <p id="merchantIdentity"></p>
+
+            <h2 id="balanceText">
+                Balance: ₹0.00
+            </h2>
+
+            <div id="dashboardMessage"></div>
+
+        </div>
+
+        <!-- API KEY -->
+
+        <div class="card">
+
             <h2>Merchant API Key</h2>
+
             <p class="muted">
-                Generate your key once. Existing keys cannot be
-                retrieved from the database.
+                Generate your key once.
+                Existing keys cannot be retrieved from the database.
             </p>
+
             <button id="generateKeyBtn" type="button">
                 Generate API Key
             </button>
+
             <div id="apiKeySection" class="hidden">
-                <label for="apiKeyInput">API Key</label>
-                <input id="apiKeyInput" type="password"
-                       placeholder="Paste existing key or use generated key">
+
+                <label for="apiKeyInput">
+                    API Key
+                </label>
+
+                <input
+                    id="apiKeyInput"
+                    type="password"
+                    placeholder="Paste existing key or use generated key"
+                >
+
                 <div class="actions">
-                    <button id="showKeyBtn" type="button"
-                            class="secondary">Show / Hide</button>
-                    <button id="copyKeyBtn" type="button"
-                            class="secondary">Copy Key</button>
+
+                    <button
+                        id="showKeyBtn"
+                        type="button"
+                        class="secondary"
+                    >
+                        Show / Hide
+                    </button>
+
+                    <button
+                        id="copyKeyBtn"
+                        type="button"
+                        class="secondary"
+                    >
+                        Copy Key
+                    </button>
+
                 </div>
+
             </div>
+
             <div id="keyMessage"></div>
+
         </div>
 
+        <!-- CREATE PAYMENT -->
+
         <div class="card">
+
             <h2>Create Payment Request</h2>
+
             <form id="paymentForm">
-                <label for="paymentAmount">Amount (INR)</label>
-                <input id="paymentAmount" type="number"
-                        step="0.01"
-                       placeholder="Example: 500.00" >
-                <button type="submit">Create Payment</button>
+
+                <label for="paymentAmount">
+                    Amount (INR)
+                </label>
+
+                <input
+                    id="paymentAmount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="Example: 500.00"
+                    required
+                >
+
+                <button type="submit">
+                    Create Payment
+                </button>
+
             </form>
 
             <div id="paymentMessage"></div>
 
             <div id="checkoutSection" class="hidden">
-                <p><strong>Customer Checkout Link</strong></p>
+
+                <p>
+                    <strong>Customer Checkout Link</strong>
+                </p>
+
                 <input id="checkoutLink" readonly>
+
                 <div class="actions">
+
                     <button id="copyLinkBtn" type="button">
                         Copy Link
                     </button>
+
                     <button id="openLinkBtn" type="button">
                         Open Checkout
                     </button>
+
                 </div>
+
             </div>
+
         </div>
+
+        <!-- TRANSACTIONS -->
 
         <div class="card">
+
             <h2>Transactions</h2>
+
             <div class="table-wrap">
+
                 <table>
+
                     <thead>
-                    <tr>
-                        <th>Payment ID</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Error</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
+                        <tr>
+                            <th>Payment ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Error</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
                     </thead>
+
                     <tbody id="transactionsBody"></tbody>
+
                 </table>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
+
 <script src="/js/app.js"></script>
+
 <script>
 "use strict";
 
-    const $ = id => document.getElementById(id);
-    let merchantApiKey = "";
-    let checkoutUrl = "";
+const $ = id => document.getElementById(id);
 
-    function message(id, text, ok = true) {
-        showMessage(id, text, ok);
-    }
+let merchantApiKey = "";
+let checkoutUrl = "";
 
-    const params = new URLSearchParams(window.location.search);
+function message(id, text, ok = true) {
+    showMessage(id, text, ok);
+}
+
+function setBusy(button, busy) {
+    button.disabled = busy;
+}
+
+function getKey() {
+    return $("apiKeyInput").value.trim() || merchantApiKey;
+}
+
+function toPaise(value) {
+    const [rupees, decimals = ""] = value.split(".");
+
+    const amount = BigInt(rupees) * 100n +
+        BigInt(decimals.padEnd(2, "0"));
+
+    return Number(amount);
+}
+
+// ------------------------------------
+// PAGE INITIALIZATION
+// ------------------------------------
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const params = new URLSearchParams(location.search);
 
     if (params.get("sessionExpired") === "true") {
-
-        showMessage(
+        message(
             "loginMessage",
             "Your session has expired. Please log in again.",
             false
         );
 
-        window.history.replaceState(
-            {},
-            document.title,
-            "/merchant.html"
+        history.replaceState({}, document.title, "/merchant.html");
+    }
+
+    if (params.get("verification") === "invalid") {
+        message(
+            "verificationMessage",
+            "Verification link is invalid, expired, or already used. Please verify again.",
+            false
         );
     }
 
-    function showDashboard(merchant) {
-        $("authSection").classList.add("hidden");
-        $("dashboard").classList.remove("hidden");
-        $("merchantIdentity").textContent =
-            merchant.businessName + " | " + merchant.merchantId;
-        $("loginForm").reset();
+    if (params.get("verification") === "success") {
+        message(
+            "verificationMessage",
+            "Email verification completed. Complete your registration below."
+        );
+
+        history.replaceState({}, document.title, "/merchant.html");
     }
 
-    function showLogin() {
-        $("dashboard").classList.add("hidden");
-        $("authSection").classList.remove("hidden");
-        $("apiKeySection").classList.add("hidden");
-        $("checkoutSection").classList.add("hidden");
-        merchantApiKey = "";
-        checkoutUrl = "";
-        $("apiKeyInput").value = "";
-         // Clear previous transactions
-        $("transactionsBody").replaceChildren();
+    await checkRegistrationStatus();
+});
 
-        $("registerMessage").textContent = "";
-        $("loginMessage").textContent = "";
-        $("dashboardMessage").textContent = "";
-        $("keyMessage").textContent = "";
-        $("paymentMessage").textContent = "";
-    }
+// ------------------------------------
+// CHECK EMAIL REGISTRATION AUTHORIZATION
+// ------------------------------------
 
-    function setBusy(button, busy) {
-        button.disabled = busy;
-    }
+async function checkRegistrationStatus() {
 
-    function getKey() {
-        const key = $("apiKeyInput").value.trim() || merchantApiKey;
-        return key;
-    }
+    try {
 
-    function toPaise(value) {
+        const result = await api(
+            "/api/v1/email-verification/registration-status"
+        );
 
-        const [rupees, decimals = ""] = value.split(".");
+        if (result.verified === true) {
 
-        const amount = BigInt(rupees) * 100n +
-            BigInt(decimals.padEnd(2, "0"));
+            $("verificationSection").classList.add("hidden");
+            $("registrationSection").classList.remove("hidden");
 
-        return Number(amount);
-    }
+            $("registerEmail").value = result.email;
 
-        // Registration
-        $("registerForm").addEventListener("submit", async event => {
-            event.preventDefault();
-            const button = event.submitter;
-            setBusy(button, true);
+            message(
+                "registerMessage",
+                "Email verified successfully. Complete your registration."
+            );
 
-            try {
-                const result = await api("/api/v1/merchants", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        businessName: $("businessName").value.trim(),
-                        email: $("registerEmail").value.trim(),
-                        password: $("registerPassword").value
-                    })
-                });
+        } else {
 
-                message("registerMessage",
-                    "Registration submitted. Merchant ID: " +
-                    result.merchantId + ". Please check and verify your email within 30 minutes. Your account will then be eligible for admin approval.");
-                $("registerForm").reset();
-            } catch (error) {
-                message("registerMessage", error.message, false);
-            } finally {
-                setBusy(button, false);
-            }
-        });
+            $("verificationSection").classList.remove("hidden");
+            $("registrationSection").classList.add("hidden");
 
-        // Login
-        $("loginForm").addEventListener("submit", async event => {
-            event.preventDefault();
-            const button = event.submitter;
-            setBusy(button, true);
-
-            try {
-                const result = await api("/api/v1/merchants/login", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        email: $("loginEmail").value.trim(),
-                        password: $("loginPassword").value
-                    })
-                });
-
-                showDashboard(result);
-                await loadMerchantData();
-            } catch (error) {
-                message("loginMessage", error.message, false);
-            } finally {
-                setBusy(button, false);
-            }
-        });
-
-        // Load balance and transactions
-        async function loadMerchantData() {
-            try {
-                const [balance, transactions] = await Promise.all([
-                    api("/api/v1/merchants/balance"),
-                    api("/api/v1/merchants/transactions")
-                ]);
-
-                $("balanceText").textContent =
-                    "Simulated Balance: " + formatAmount(balance.balancePaise);
-
-                renderTransactions(transactions);
-                $("dashboardMessage").textContent = "";
-            } catch (error) {
-                message("dashboardMessage", error.message, false);
-            }
         }
 
-        function renderTransactions(transactions) {
-            const tbody = $("transactionsBody");
-            tbody.replaceChildren();
+    } catch (error) {
 
-            if (!transactions.length) {
-                const row = tbody.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 6;
-                cell.textContent = "No transactions yet.";
-                return;
-            }
+        message(
+            "verificationMessage",
+            error.message,
+            false
+        );
+    }
+}
 
-            for (const payment of transactions) {
-                const row = tbody.insertRow();
+// ------------------------------------
+// LOGIN SECTION TOGGLE
+// ------------------------------------
 
-                const values = [
-                    payment.paymentId,
-                    formatAmount(payment.amountPaise),
-                    payment.status,
-                    payment.errorCode || "-",
-                    payment.createdAt
-                        ? new Date(payment.createdAt).toLocaleString()
-                        : "-"
-                ];
+$("showLoginBtn").addEventListener("click", () => {
 
-                for (const value of values) {
-                    row.insertCell().textContent = value;
-                }
+    $("loginSection").classList.remove("hidden");
+    $("showLoginBtn").classList.add("hidden");
 
-                const action = row.insertCell();
+});
 
-                if (payment.status === "SUCCESS") {
-                    const button = document.createElement("button");
-                    button.type = "button";
-                    button.className = "small-btn danger";
-                    button.textContent = "Full Refund";
-                    button.addEventListener("click",
-                        () => refundPayment(payment.paymentId));
-                    action.appendChild(button);
-                } else {
-                    action.textContent = "-";
-                }
-            }
-        }
 
-        // API-key issuance
-        $("generateKeyBtn").addEventListener("click", async event => {
-            const button = event.currentTarget;
-            setBusy(button, true);
+// ------------------------------------
+// SEND VERIFICATION EMAIL
+// ------------------------------------
 
-            try {
-                const csrf = await getCsrfToken("merchants");
-                const result = await api("/api/v1/merchants/api-key", {
-                    method: "POST",
-                    headers: csrf
-                });
+$("verificationForm").addEventListener(
+    "submit",
+    async event => {
 
-                merchantApiKey = result.apiKey;
-                $("apiKeyInput").value = merchantApiKey;
-                $("apiKeySection").classList.remove("hidden");
+        event.preventDefault();
 
-                message("keyMessage",
-                    "API key generated. Copy and save it now; " +
-                    "it cannot be retrieved again.");
-            } catch (error) {
-                $("apiKeySection").classList.remove("hidden");
+        const button = $("verifyEmailBtn");
 
-                message("keyMessage", error.message, false);
-            } finally {
-                setBusy(button, false);
-            }
-        });
-
-        $("showKeyBtn").addEventListener("click", () => {
-            $("apiKeyInput").type =
-                $("apiKeyInput").type === "password" ? "text" : "password";
-        });
-
-        $("copyKeyBtn").addEventListener("click", async () => {
-            try {
-                await navigator.clipboard.writeText(getKey());
-                message("keyMessage", "API key copied.");
-            } catch (error) {
-                message("keyMessage", error.message, false);
-            }
-        });
-
-        // Create payment with idempotency protection
-
-        let pendingIdempotencyKey = null;
-        let pendingPaymentAmount = null;
-
-        $("paymentForm").addEventListener("submit", async event => {
-            event.preventDefault();
-
-            const button = event.submitter;
-            setBusy(button, true);
-
-            try {
-                const amountPaise = toPaise($("paymentAmount").value);
-                const apiKey = getKey();
-
-                if (!apiKey) {
-                    throw new Error("Please enter or generate your Merchant API Key.");
-                }
-
-                // Reuse the same key when retrying the same payment request.
-                if (
-                    pendingIdempotencyKey === null ||
-                    pendingPaymentAmount !== amountPaise
-                ) {
-                    pendingIdempotencyKey = crypto.randomUUID();
-                    pendingPaymentAmount = amountPaise;
-                }
-
-                const result = await api("/api/v1/payments", {
-                    method: "POST",
-                    headers: {
-                        "X-API-Key": apiKey,
-                        "Idempotency-Key": pendingIdempotencyKey
-                    },
-                    body: JSON.stringify({
-                        amountPaise,
-                        currency: "INR"
-                    })
-                });
-
-                if (
-                    typeof result.checkoutToken !== "string" ||
-                    !/^[0-9a-f]{64}$/.test(result.checkoutToken)
-                ) {
-                    throw new Error(
-                        "Payment was created but no valid checkout token was returned."
-                    );
-                }
-
-                checkoutUrl = new URL("/payment.html", location.origin);
-                checkoutUrl.searchParams.set("token", result.checkoutToken);
-                checkoutUrl = checkoutUrl.toString();
-
-                $("checkoutLink").value = checkoutUrl;
-                $("checkoutSection").classList.remove("hidden");
-
-                message(
-                    "paymentMessage",
-                    "Payment request created: " + result.paymentId
-                );
-
-                // Clear the key after successful creation.
-                pendingIdempotencyKey = null;
-                pendingPaymentAmount = null;
-
-                $("paymentForm").reset();
-
-                await loadMerchantData();
-
-            } catch (error) {
-                message("paymentMessage", error.message, false);
-
-            } finally {
-                setBusy(button, false);
-            }
-        });
-
-        $("copyLinkBtn").addEventListener("click", async () => {
-            try {
-                await navigator.clipboard.writeText(checkoutUrl);
-                message("paymentMessage", "Checkout link copied.");
-            } catch (error) {
-                message("paymentMessage", error.message, false);
-            }
-        });
-
-        $("openLinkBtn").addEventListener("click", () => {
-            if (checkoutUrl) {
-                window.open(checkoutUrl, "_blank", "noopener,noreferrer");
-            }
-        });
-
-        // Full refund
-        async function refundPayment(paymentId) {
-            if (!confirm("Refund this payment in full?")) return;
-
-            try {
-                const csrf = await getCsrfToken("merchants");
-
-                await api(
-                    `/api/v1/merchants/refunds/${encodeURIComponent(paymentId)}`,
-                    { method: "POST", headers: csrf }
-                );
-
-                message("dashboardMessage", "Full refund completed.");
-                await loadMerchantData();
-            } catch (error) {
-                message("dashboardMessage", error.message, false);
-            }
-        }
-
-        $("refreshBtn").addEventListener("click", loadMerchantData);
-
-        // Spring Security's default logout endpoint, if enabled.
-        $("logoutBtn").addEventListener("click", async () => {
-        const button = $("logoutBtn");
-        button.disabled = true;
+        setBusy(button, true);
 
         try {
+
+            const email = $("verificationEmail")
+                .value.trim().toLowerCase();
+
+            if (!email) {
+                throw new Error("Please enter your email address.");
+            }
+
             const csrf = await getCsrfToken("merchants");
 
-            await api("/logout", {
+            const result = await api(
+                "/api/v1/email-verification/send",
+                {
+                    method: "POST",
+                    headers: csrf,
+                    body: JSON.stringify({
+                        email: email
+                    })
+                }
+            );
+
+            message(
+                "verificationMessage",
+                result.message ||
+                "Verification email sent. Please check your inbox."
+            );
+
+        } catch (error) {
+
+            message(
+                "verificationMessage",
+                error.message,
+                false
+            );
+
+        } finally {
+
+            setBusy(button, false);
+
+        }
+    }
+);
+
+
+// ------------------------------------
+// MERCHANT REGISTRATION
+// ------------------------------------
+
+$("registerForm").addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+        $("existingMerchantActions").classList.add("hidden");
+
+        const button = $("registerBtn");
+
+        setBusy(button, true);
+
+        try {
+
+            const result = await api(
+                "/api/v1/merchants",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+
+                        businessName: $("businessName")
+                            .value.trim(),
+
+                        email: $("registerEmail")
+                            .value.trim(),
+
+                        password: $("registerPassword")
+                            .value
+
+                    })
+                }
+            );
+
+            message(
+                "registerMessage",
+                "Registration successful! Merchant ID: " +
+                result.merchantId +
+                ". Await admin approval."
+            );
+
+            $("registerForm").reset();
+
+            $("registrationSection").classList.add("hidden");
+            $("verificationSection").classList.remove("hidden");
+
+            $("verificationEmail").value = "";
+
+            const csrf = await getCsrfToken("merchants");
+
+            await api(
+                "/api/v1/email-verification/clear-authorization",
+                {
+                    method: "POST",
+                    headers: csrf
+                }
+            );
+
+        } catch (error) {
+
+            message(
+                "registerMessage",
+                error.message,
+                false
+            );
+
+            const alreadyRegistered =
+                error.message.toLowerCase().includes(
+                    "already registered"
+                );
+
+            if (alreadyRegistered) {
+
+                $("existingMerchantActions")
+                    .classList.remove("hidden");
+
+            }
+
+        } finally {
+
+            setBusy(button, false);
+
+        }
+    }
+);
+
+
+// ------------------------------------
+// MERCHANT LOGIN
+// ------------------------------------
+
+$("loginForm").addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const button = $("loginBtn");
+
+        setBusy(button, true);
+
+        try {
+
+            const result = await api(
+                "/api/v1/merchants/login",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+
+                        email: $("loginEmail").value.trim(),
+
+                        password: $("loginPassword").value
+
+                    })
+                }
+            );
+
+            showDashboard(result);
+
+            await loadMerchantData();
+
+        } catch (error) {
+
+            message(
+                "loginMessage",
+                error.message,
+                false
+            );
+
+        } finally {
+
+            setBusy(button, false);
+
+        }
+    }
+);
+
+
+// ------------------------------------
+// SHOW MERCHANT DASHBOARD
+// ------------------------------------
+
+function showDashboard(merchant) {
+
+    $("authSection").classList.add("hidden");
+
+    $("dashboard").classList.remove("hidden");
+
+    $("merchantIdentity").textContent =
+        merchant.businessName + " | " + merchant.merchantId;
+
+    $("loginForm").reset();
+}
+
+
+// ------------------------------------
+// SHOW LOGIN / REGISTRATION
+// ------------------------------------
+function showLogin() {
+
+    $("dashboard").classList.add("hidden");
+
+    $("authSection").classList.remove("hidden");
+
+    $("loginSection").classList.add("hidden");
+
+    $("showLoginBtn").classList.remove("hidden");
+
+    $("apiKeySection").classList.add("hidden");
+
+    $("checkoutSection").classList.add("hidden");
+
+    $("existingMerchantActions").classList.add("hidden");
+
+    merchantApiKey = "";
+    checkoutUrl = "";
+
+    $("apiKeyInput").value = "";
+
+    $("transactionsBody").replaceChildren();
+
+    $("dashboardMessage").textContent = "";
+    $("keyMessage").textContent = "";
+    $("paymentMessage").textContent = "";
+    $("loginMessage").textContent = "";
+}
+
+async function goToMerchantLogin() {
+
+    try {
+
+        const csrf = await getCsrfToken("merchants");
+
+        await api(
+            "/api/v1/email-verification/clear-authorization",
+            {
                 method: "POST",
                 headers: csrf
-            });
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Unable to clear registration authorization:",
+            error
+        );
+    }
+
+    $("registrationSection").classList.add("hidden");
+
+    $("verificationSection").classList.remove("hidden");
+
+    $("loginSection").classList.remove("hidden");
+
+    $("showLoginBtn").classList.add("hidden");
+
+    $("existingMerchantActions").classList.add("hidden");
+
+    $("registerMessage").textContent = "";
+
+    $("loginEmail").value = $("registerEmail").value;
+
+    $("loginPassword").value = "";
+}
+
+$("goToLoginBtn").addEventListener(
+    "click",
+    goToMerchantLogin
+);
+
+// ------------------------------------
+// LOAD BALANCE AND TRANSACTIONS
+// ------------------------------------
+
+async function loadMerchantData() {
+
+    try {
+
+        const [balance, transactions] = await Promise.all([
+
+            api("/api/v1/merchants/balance"),
+
+            api("/api/v1/merchants/transactions")
+
+        ]);
+
+        $("balanceText").textContent =
+            "Simulated Balance: " +
+            formatAmount(balance.balancePaise);
+
+        renderTransactions(transactions);
+
+        $("dashboardMessage").textContent = "";
+
+    } catch (error) {
+
+        message(
+            "dashboardMessage",
+            error.message,
+            false
+        );
+    }
+}
+
+
+// ------------------------------------
+// RENDER TRANSACTIONS
+// ------------------------------------
+
+function renderTransactions(transactions) {
+
+    const tbody = $("transactionsBody");
+
+    tbody.replaceChildren();
+
+    if (!transactions.length) {
+
+        const row = tbody.insertRow();
+
+        const cell = row.insertCell();
+
+        cell.colSpan = 6;
+
+        cell.textContent = "No transactions yet.";
+
+        return;
+    }
+
+    for (const payment of transactions) {
+
+        const row = tbody.insertRow();
+
+        const values = [
+
+            payment.paymentId,
+
+            formatAmount(payment.amountPaise),
+
+            payment.status,
+
+            payment.errorCode || "-",
+
+            payment.createdAt
+                ? new Date(payment.createdAt).toLocaleString()
+                : "-"
+
+        ];
+
+        for (const value of values) {
+
+            row.insertCell().textContent = value;
+        }
+
+        const action = row.insertCell();
+
+        if (payment.status === "SUCCESS") {
+
+            const button = document.createElement("button");
+
+            button.type = "button";
+
+            button.className = "small-btn danger";
+
+            button.textContent = "Full Refund";
+
+            button.addEventListener(
+                "click",
+                () => refundPayment(payment.paymentId)
+            );
+
+            action.appendChild(button);
+
+        } else {
+
+            action.textContent = "-";
+
+        }
+    }
+}
+
+
+// ------------------------------------
+// GENERATE MERCHANT API KEY
+// ------------------------------------
+
+$("generateKeyBtn").addEventListener(
+    "click",
+    async event => {
+
+        const button = event.currentTarget;
+
+        setBusy(button, true);
+
+        try {
+
+            const csrf = await getCsrfToken("merchants");
+
+            const result = await api(
+                "/api/v1/merchants/api-key",
+                {
+                    method: "POST",
+                    headers: csrf
+                }
+            );
+
+            merchantApiKey = result.apiKey;
+
+            $("apiKeyInput").value = merchantApiKey;
+
+            $("apiKeySection").classList.remove("hidden");
+
+            message(
+                "keyMessage",
+                "API key generated successfully. Copy and save it now."
+            );
+
+        } catch (error) {
+
+            $("apiKeySection").classList.remove("hidden");
+
+            message(
+                "keyMessage",
+                error.message,
+                false
+            );
+
+        } finally {
+
+            setBusy(button, false);
+
+        }
+    }
+);
+
+
+// ------------------------------------
+// SHOW / HIDE API KEY
+// ------------------------------------
+
+$("showKeyBtn").addEventListener("click", () => {
+
+    $("apiKeyInput").type =
+        $("apiKeyInput").type === "password"
+            ? "text"
+            : "password";
+
+});
+
+
+// ------------------------------------
+// COPY API KEY
+// ------------------------------------
+
+$("copyKeyBtn").addEventListener(
+    "click",
+    async () => {
+
+        try {
+
+            await navigator.clipboard.writeText(getKey());
+
+            message("keyMessage", "API key copied.");
+
+        } catch (error) {
+
+            message(
+                "keyMessage",
+                error.message,
+                false
+            );
+        }
+    }
+);
+
+
+// ------------------------------------
+// CREATE PAYMENT REQUEST
+// ------------------------------------
+
+let pendingIdempotencyKey = null;
+
+let pendingPaymentAmount = null;
+
+$("paymentForm").addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const button = event.submitter;
+
+        setBusy(button, true);
+
+        try {
+
+            const amountPaise =
+                toPaise($("paymentAmount").value);
+
+            const apiKey = getKey();
+
+            if (!apiKey) {
+
+                throw new Error(
+                    "Please enter or generate your Merchant API Key."
+                );
+            }
+
+            if (
+                pendingIdempotencyKey === null ||
+                pendingPaymentAmount !== amountPaise
+            ) {
+
+                pendingIdempotencyKey = crypto.randomUUID();
+
+                pendingPaymentAmount = amountPaise;
+            }
+
+            const result = await api(
+                "/api/v1/payments",
+                {
+                    method: "POST",
+
+                    headers: {
+
+                        "X-API-Key": apiKey,
+
+                        "Idempotency-Key": pendingIdempotencyKey
+
+                    },
+
+                    body: JSON.stringify({
+
+                        amountPaise: amountPaise,
+
+                        currency: "INR"
+
+                    })
+                }
+            );
+
+            if (
+                typeof result.checkoutToken !== "string" ||
+                !/^[0-9a-f]{64}$/.test(result.checkoutToken)
+            ) {
+
+                throw new Error(
+                    "Payment was created but no valid checkout token was returned."
+                );
+            }
+
+            const url = new URL(
+                "/payment.html",
+                location.origin
+            );
+
+            url.searchParams.set(
+                "token",
+                result.checkoutToken
+            );
+
+            checkoutUrl = url.toString();
+
+            $("checkoutLink").value = checkoutUrl;
+
+            $("checkoutSection").classList.remove("hidden");
+
+            message(
+                "paymentMessage",
+                "Payment request created: " + result.paymentId
+            );
+
+            pendingIdempotencyKey = null;
+
+            pendingPaymentAmount = null;
+
+            $("paymentForm").reset();
+
+            await loadMerchantData();
+
+        } catch (error) {
+
+            message(
+                "paymentMessage",
+                error.message,
+                false
+            );
+
+        } finally {
+
+            setBusy(button, false);
+
+        }
+    }
+);
+
+
+// ------------------------------------
+// COPY CHECKOUT LINK
+// ------------------------------------
+
+$("copyLinkBtn").addEventListener(
+    "click",
+    async () => {
+
+        try {
+
+            await navigator.clipboard.writeText(checkoutUrl);
+
+            message(
+                "paymentMessage",
+                "Checkout link copied."
+            );
+
+        } catch (error) {
+
+            message(
+                "paymentMessage",
+                error.message,
+                false
+            );
+        }
+    }
+);
+
+
+// ------------------------------------
+// OPEN CUSTOMER CHECKOUT
+// ------------------------------------
+
+$("openLinkBtn").addEventListener("click", () => {
+
+    if (checkoutUrl) {
+
+        window.open(
+            checkoutUrl,
+            "_blank",
+            "noopener,noreferrer"
+        );
+    }
+});
+
+
+// ------------------------------------
+// FULL REFUND
+// ------------------------------------
+
+async function refundPayment(paymentId) {
+
+    if (!confirm("Refund this payment in full?")) {
+        return;
+    }
+
+    try {
+
+        const csrf = await getCsrfToken("merchants");
+
+        await api(
+            `/api/v1/merchants/refunds/${encodeURIComponent(paymentId)}`,
+            {
+                method: "POST",
+                headers: csrf
+            }
+        );
+
+        message(
+            "dashboardMessage",
+            "Full refund completed."
+        );
+
+        await loadMerchantData();
+
+    } catch (error) {
+
+        message(
+            "dashboardMessage",
+            error.message,
+            false
+        );
+    }
+}
+
+
+// ------------------------------------
+// REFRESH DASHBOARD
+// ------------------------------------
+
+$("refreshBtn").addEventListener(
+    "click",
+    loadMerchantData
+);
+
+
+// ------------------------------------
+// MERCHANT LOGOUT
+// ------------------------------------
+
+$("logoutBtn").addEventListener(
+    "click",
+    async () => {
+
+        const button = $("logoutBtn");
+
+        setBusy(button, true);
+
+        try {
+
+            const csrf = await getCsrfToken("merchants");
+
+            await api(
+                "/logout",
+                {
+                    method: "POST",
+                    headers: csrf
+                }
+            );
 
             merchantApiKey = "";
+
             checkoutUrl = "";
 
             showLogin();
-            message("loginMessage", "Logged out successfully.");
+
+            message(
+                "loginMessage",
+                "Logged out successfully."
+            );
 
         } catch (error) {
+
             message(
                 "dashboardMessage",
                 "Logout failed: " + error.message,
                 false
             );
+
         } finally {
-            button.disabled = false;
+
+            setBusy(button, false);
+
         }
-    });
+    }
+);
+
 </script>
 </body>
 </html>

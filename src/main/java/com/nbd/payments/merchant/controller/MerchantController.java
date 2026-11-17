@@ -8,21 +8,25 @@ import com.nbd.payments.merchant.entity.Merchant;
 import com.nbd.payments.merchant.service.MerchantApiKeyService;
 import com.nbd.payments.merchant.service.MerchantService;
 import com.nbd.payments.payment.dto.PaymentResponse;
-import com.nbd.payments.payment.entity.Payment;
 import com.nbd.payments.payment.service.PaymentService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +42,10 @@ public class MerchantController {
         private final MerchantService merchantService;
         private final MerchantApiKeyService merchantApiKeyService;
         private final PaymentService paymentService;
+
+        @Value("${app.security.cookie-secure:false}")
+        private boolean secureCookie;
+
         public MerchantController(
                 MerchantService merchantService,
                 MerchantApiKeyService merchantApiKeyService,
@@ -49,16 +57,35 @@ public class MerchantController {
 
         @PostMapping 
         public ResponseEntity<MerchantRegistrationResponse> registerMerchant(
-                @Valid  @RequestBody  MerchantRegistrationRequest request
+                @Valid  @RequestBody  MerchantRegistrationRequest request,
+                @CookieValue(
+                        name = "NBD_REGISTRATION_AUTH",
+                        required = false
+                ) String authorizationToken,
+                HttpServletResponse response
         ){
                 Merchant merchant = merchantService.registerMerchant(
-                request.businessName(),
-                request.email(),
-                request.password()
+                        request.businessName(),
+                        request.email(),
+                        request.password(),
+                        authorizationToken
                 );
-                System.out.println( "Hello this is checkingggg");
 
-                MerchantRegistrationResponse response = 
+                ResponseCookie cookie = ResponseCookie
+                        .from("NBD_REGISTRATION_AUTH", "")
+                        .httpOnly(true)
+                        .secure(secureCookie)
+                        .path("/")
+                        .sameSite("Lax")
+                        .maxAge(Duration.ZERO)
+                        .build();
+                
+                response.addHeader(
+                        org.springframework.http.HttpHeaders.SET_COOKIE, 
+                        cookie.toString()
+                );
+
+                MerchantRegistrationResponse registrationResponse = 
                 new MerchantRegistrationResponse(
                         merchant.getMerchantId(),
                         merchant.getBusinessName(),
@@ -69,7 +96,7 @@ public class MerchantController {
 
                 return ResponseEntity
                         .status(HttpStatus.CREATED)
-                        .body(response);
+                        .body(registrationResponse);
         }
                 
         @PostMapping("/login")
