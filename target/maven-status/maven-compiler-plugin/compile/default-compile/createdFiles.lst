@@ -34,6 +34,7 @@ com\nbd\payments\email\controller\EmailVerificationController.class
 com\nbd\payments\admin\dto\MerchantStatus.class
 com\nbd\payments\merchant\repository\MerchantCredentialRepository.class
 com\nbd\payments\email\service\EmailService.class
+com\nbd\payments\payment\dto\MerchantPaymentStatusResponse.class
 com\nbd\payments\common\exception\ApiExceptionHandler.class
 com\nbd\payments\merchant\dto\MerchantRegistrationResponse.class
 com\nbd\payments\merchant\dto\MerchantRegistrationRequest.class

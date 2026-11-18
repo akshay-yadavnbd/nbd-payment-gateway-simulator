@@ -80,6 +80,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/merchants/**")
                 .hasRole("MERCHANT")
 
+                .requestMatchers(HttpMethod.GET, "/api/v1/payments/*").permitAll()
+
                 .anyRequest().authenticated()
             )
             .securityContext(context -> context

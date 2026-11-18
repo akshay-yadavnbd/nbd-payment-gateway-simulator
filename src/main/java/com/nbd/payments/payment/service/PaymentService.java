@@ -9,6 +9,7 @@ import com.nbd.payments.payment.repository.PaymentRepository;
 import com.nbd.payments.payment.repository.PaymentAttemptRepository;
 import com.nbd.payments.payment.entity.PaymentAttempt;
 import com.nbd.payments.payment.dto.CardPaymentResponse;
+import com.nbd.payments.payment.dto.MerchantPaymentStatusResponse;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -389,6 +390,20 @@ public class PaymentService {
                         );
                 }
                 return PaymentResponse.from(payment);
+        }
+        @Transactional(readOnly = true)
+        public MerchantPaymentStatusResponse getMerchantPaymentStatus(
+                Merchant merchant,
+                String paymentId
+        ) {
+        Payment payment = paymentRepository
+                .findByPaymentIdAndMerchant_Id(paymentId, merchant.getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Payment not found"
+                ));
+
+        return MerchantPaymentStatusResponse.from(payment);
         }
 
 }

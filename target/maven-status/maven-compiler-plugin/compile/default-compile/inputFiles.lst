@@ -30,6 +30,7 @@ C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\payment\contro
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\payment\dto\CardPaymentRequest.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\payment\dto\CardPaymentResponse.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\payment\dto\CreatePaymentRequest.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\payment\dto\MerchantPaymentStatusResponse.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\payment\dto\PaymentResponse.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\payment\dto\PaymentSummaryResponse.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\payment\entity\Payment.java

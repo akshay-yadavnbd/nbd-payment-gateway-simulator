@@ -8,6 +8,7 @@ import com.nbd.payments.payment.dto.CardPaymentResponse;
 import com.nbd.payments.payment.dto.CreatePaymentRequest;
 import com.nbd.payments.payment.dto.PaymentResponse;
 import com.nbd.payments.payment.service.PaymentService;
+import com.nbd.payments.payment.dto.MerchantPaymentStatusResponse;
 
 import jakarta.validation.Valid;
 
@@ -98,5 +99,16 @@ public class PaymentController {
                 return ResponseEntity.ok(
                         paymentService.getCheckoutDetails(checkoutToken)
                 );
+        }
+        @GetMapping("/{paymentId}")
+        public ResponseEntity<MerchantPaymentStatusResponse> getPaymentStatus(
+                @RequestHeader("X-API-Key") String apiKey,
+                @PathVariable String paymentId
+        ) {
+        Merchant merchant = apiKeyService.authenticateApiKey(apiKey);
+
+        return ResponseEntity.ok(
+                paymentService.getMerchantPaymentStatus(merchant, paymentId)
+        );
         }
 }

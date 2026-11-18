@@ -17,44 +17,48 @@ import java.util.Optional;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    Optional<Payment> findByPaymentId(String paymentId);
+        Optional<Payment> findByPaymentId(String paymentId);
+        Optional<Payment> findByPaymentIdAndMerchant_Id(
+                String paymentId,
+                Long merchantId
+                );
 
-    Optional<Payment> findByCheckoutToken(String checkoutToken);
-        
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT p FROM Payment p WHERE p.checkoutToken = :token")
-    Optional<Payment> findWithLockByCheckoutToken(
-            @Param("token") String token
-    );
+        Optional<Payment> findByCheckoutToken(String checkoutToken);
+                
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("SELECT p FROM Payment p WHERE p.checkoutToken = :token")
+        Optional<Payment> findWithLockByCheckoutToken(
+                @Param("token") String token
+        );
 
-    List<Payment> findByMerchant_IdOrderByCreatedAtDesc(Long merchantId);
+        List<Payment> findByMerchant_IdOrderByCreatedAtDesc(Long merchantId);
 
-    List<Payment> findAllByOrderByCreatedAtDesc();
+        List<Payment> findAllByOrderByCreatedAtDesc();
 
-    @Query("""
-        SELECT COALESCE(SUM(p.settledAmountPaise), 0)
-        FROM Payment p
-        WHERE p.merchant.id = :merchantId
-        """)
-    Long calculateMerchantBalance(
-            @Param("merchantId") Long merchantId
-    );
+        @Query("""
+                SELECT COALESCE(SUM(p.settledAmountPaise), 0)
+                FROM Payment p
+                WHERE p.merchant.id = :merchantId
+                """)
+        Long calculateMerchantBalance(
+                @Param("merchantId") Long merchantId
+        );
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-        SELECT p FROM Payment p
-        WHERE p.paymentId = :paymentId
-        AND p.merchant.id = :merchantId
-        """)
-    Optional<Payment> findForRefund(
-            @Param("paymentId") String paymentId,
-            @Param("merchantId") Long merchantId
-    );
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("""
+                SELECT p FROM Payment p
+                WHERE p.paymentId = :paymentId
+                AND p.merchant.id = :merchantId
+                """)
+        Optional<Payment> findForRefund(
+                @Param("paymentId") String paymentId,
+                @Param("merchantId") Long merchantId
+        );
 
-    Optional<Payment> findByMerchant_IdAndIdempotencyKey(
-            Long merchantId,
-            String idempotencyKey
-    );
+        Optional<Payment> findByMerchant_IdAndIdempotencyKey(
+                Long merchantId,
+                String idempotencyKey
+        );
 
 }
 
