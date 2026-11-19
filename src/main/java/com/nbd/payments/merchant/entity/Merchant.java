@@ -66,6 +66,9 @@ public class Merchant {
     )
     private OffsetDateTime updatedAt;
 
+    @Column(name = "return_url", length = 1000)
+    private String returnUrl;
+
 
     protected  Merchant(){
         //Required by JPA
@@ -125,6 +128,10 @@ public class Merchant {
         return updatedAt;
     }
 
+    public String getReturnUrl() {
+        return returnUrl;
+    }
+
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
     }
@@ -139,5 +146,9 @@ public class Merchant {
 
     public void setStatus(String status){
         this.status = status;
+    }
+    
+    public void setReturnUrl(String returnUrl) {
+        this.returnUrl = returnUrl;
     }
 }

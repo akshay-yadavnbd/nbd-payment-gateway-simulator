@@ -18,13 +18,16 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.net.URI;
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Objects;
 
 @Service
 public class PaymentService {
@@ -63,7 +66,8 @@ public class PaymentService {
         public PaymentResponse createPayment(
                 Merchant merchant,
                 Long amountPaise,
-                String idempotencyKey
+                String idempotencyKey,
+                String returnUrl
         ) {
 
                 if (merchant == null || !"ACTIVE".equals(merchant.getStatus())) {
@@ -71,6 +75,7 @@ public class PaymentService {
                         "Merchant is not active"
                 );
                 }
+                String effectiveReturnUrl = resolveReturnUrl(merchant, returnUrl);
 
                 if (amountPaise == null || amountPaise < 100L) {
                         throw new IllegalArgumentException(
@@ -94,17 +99,25 @@ public class PaymentService {
                                         idempotencyKey
                                 );
                 if (existingPayment.isPresent()) {
-                        Payment payment = existingPayment.get();
+                Payment payment = existingPayment.get();
 
-                        if (!payment.getAmountPaise().equals(amountPaise) ||
-                                !"INR".equals(payment.getCurrency())) {
-                                
-                                        throw new ResponseStatusException(
-                                                HttpStatus.CONFLICT,
-                                                "Idempotency key already used with different payment details"
-                                        );
-                        }
-                        return PaymentResponse.from(payment);
+                if (!payment.getAmountPaise().equals(amountPaise) ||
+                        !"INR".equals(payment.getCurrency())) {
+
+                        throw new ResponseStatusException(
+                                HttpStatus.CONFLICT,
+                                "Idempotency key already used with different payment details"
+                        );
+                }
+
+                if (!Objects.equals(payment.getReturnUrl(), effectiveReturnUrl)) {
+                        throw new ResponseStatusException(
+                                HttpStatus.CONFLICT,
+                                "Idempotency key was already used with a different return URL"
+                        );
+                }
+
+                return PaymentResponse.from(payment);
                 }
 
                 //generating unique payment ID
@@ -132,6 +145,7 @@ public class PaymentService {
                         );
 
                         payment.setIdempotencyKey(idempotencyKey);
+                        payment.setReturnUrl(effectiveReturnUrl);           
                         Payment savedPayment = 
                                         paymentRepository.saveAndFlush(payment);
                         return PaymentResponse.from(savedPayment);
@@ -140,7 +154,8 @@ public class PaymentService {
                         return findExistingPayment(
                                                 merchant.getId(), 
                                                 idempotencyKey, 
-                                                amountPaise
+                                                amountPaise,
+                                                effectiveReturnUrl
                                         );
                 }
 
@@ -355,20 +370,27 @@ public class PaymentService {
                 long attemptsUsed =
                         paymentAttemptRepository.countByPayment(payment);
                         
-                return Map.of(
-                        "merchantName", payment.getMerchant().getBusinessName(),
-                        "amountPaise", payment.getAmountPaise(),
-                        "currency", payment.getCurrency(),
-                        "paymentId", payment.getPaymentId(),
-                        "attemptsUsed", attemptsUsed,
-                        "attemptsRemaining", Math.max(0, 5-attemptsUsed)
-                );
+                Map<String, Object> checkoutDetails = new HashMap<>();
+
+                checkoutDetails.put("merchantName", payment.getMerchant().getBusinessName());
+                checkoutDetails.put("amountPaise", payment.getAmountPaise());
+                checkoutDetails.put("currency", payment.getCurrency());
+                checkoutDetails.put("paymentId", payment.getPaymentId());
+                checkoutDetails.put("attemptsUsed", attemptsUsed);
+                checkoutDetails.put("attemptsRemaining", Math.max(0, 5 - attemptsUsed));
+
+                if (payment.getReturnUrl() != null && !payment.getReturnUrl().isBlank()) {
+                checkoutDetails.put("returnUrl", payment.getReturnUrl());
+                }
+
+                return checkoutDetails;
         }
 
         private  PaymentResponse findExistingPayment(
                 Long merchantId,
                 String idempotencyKey,
-                Long amountPaise
+                Long amountPaise,
+                String effectiveReturnUrl
         ){
                 Payment payment = paymentRepository
                         .findByMerchant_IdAndIdempotencyKey(
@@ -389,6 +411,12 @@ public class PaymentService {
                                 "Idempotency key already used with different payment details"
                         );
                 }
+                if (!Objects.equals(payment.getReturnUrl(), effectiveReturnUrl)) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "Idempotency key was already used with a different return URL"
+                );
+                }
                 return PaymentResponse.from(payment);
         }
         @Transactional(readOnly = true)
@@ -404,6 +432,53 @@ public class PaymentService {
                 ));
 
         return MerchantPaymentStatusResponse.from(payment);
+        }
+
+        private String resolveReturnUrl(Merchant merchant, String requestedReturnUrl) {
+        String registeredReturnUrl = merchant.getReturnUrl();
+
+        // Preserve compatibility for existing integrations that do not use return URLs.
+        if (requestedReturnUrl == null || requestedReturnUrl.isBlank()) {
+                return registeredReturnUrl;
+        }
+
+        String requested = requestedReturnUrl.trim();
+
+        if (registeredReturnUrl == null || registeredReturnUrl.isBlank()
+                || !requested.equals(registeredReturnUrl.trim())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Return URL is not registered for this merchant"
+                );
+        }
+
+        try {
+                URI uri = URI.create(requested);
+
+                boolean secureHttps =
+                        "https".equalsIgnoreCase(uri.getScheme());
+
+                boolean localHttp =
+                        "http".equalsIgnoreCase(uri.getScheme())
+                        && (
+                                "localhost".equalsIgnoreCase(uri.getHost())
+                                || "127.0.0.1".equals(uri.getHost())
+                        );
+
+                if ((!secureHttps && !localHttp)
+                        || uri.getHost() == null
+                        || uri.getUserInfo() != null
+                        || uri.getFragment() != null) {
+                throw new IllegalArgumentException("Invalid return URL");
+                }
+        } catch (IllegalArgumentException ex) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Invalid return URL"
+                );
+        }
+
+        return requested;
         }
 
 }

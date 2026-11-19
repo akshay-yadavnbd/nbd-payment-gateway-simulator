@@ -72,7 +72,8 @@ public class PaymentController {
         PaymentResponse response = paymentService.createPayment(
                 apiKeyMerchant,
                 request.amountPaise(),
-                idempotencyKey
+                idempotencyKey,
+                request.returnUrl()
         );
         return ResponseEntity
                 .status(HttpStatus.CREATED)

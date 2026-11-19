@@ -70,7 +70,7 @@
                 inputmode="numeric"
                 autocomplete="cc-number"
                 maxlength="16"
-                pattern="[0-9]{16}" 
+                pattern="[0-9]{16}"
             >
 
             <label for="expiry">Expiry Date</label>
@@ -81,7 +81,6 @@
                 placeholder="MM/YY"
                 autocomplete="cc-exp"
                 maxlength="5"
-                
             >
 
             <label for="cvv">CVV</label>
@@ -94,7 +93,6 @@
                 autocomplete="cc-csc"
                 maxlength="3"
                 pattern="[0-9]{3}"
-                
             >
 
             <button id="payButton" type="submit">
@@ -135,6 +133,9 @@ const attemptSection =
 let paymentCompleted = false;
 let paymentClosed = false;
 
+// CHANGE: Store the trusted return URL received from checkout details API.
+let trustedReturnUrl = null;
+
 
 // Disable payment form permanently
 
@@ -147,6 +148,36 @@ function closePaymentForm() {
     payButton.disabled = true;
 
 }
+
+// CHANGE: Redirect only after confirmed successful payment.
+// The return URL is supplied by the backend checkout details response.
+function redirectToMerchant(paymentId) {
+
+    if (!trustedReturnUrl) {
+        return false;
+    }
+
+    try {
+
+        const returnUrl = new URL(trustedReturnUrl);
+
+        // Add the confirmed NBD payment ID to the merchant return URL.
+        returnUrl.searchParams.set("paymentId", paymentId);
+
+        window.location.assign(returnUrl.toString());
+
+        return true;
+
+    } catch (error) {
+
+        console.error("Invalid trusted return URL:", error);
+
+        return false;
+
+    }
+
+}
+
 
 // Process payment submission
 
@@ -215,10 +246,20 @@ paymentForm.addEventListener("submit", async (event) => {
                 result.paymentId
             );
 
+            // CHANGE: Return customer to Throttlein after confirmed success.
+            // If no return URL exists, preserve the existing success screen.
+            if (trustedReturnUrl && result.paymentId) {
+
+                redirectToMerchant(result.paymentId);
+
+            }
+
             return;
         }
 
         // Five failed attempts
+
+        // Payment permanently failed
 
         if (
             result.status === "FAILED" ||
@@ -236,6 +277,11 @@ paymentForm.addEventListener("submit", async (event) => {
                 false
             );
 
+            // Return customer to the merchant after terminal failure.
+            if (trustedReturnUrl && result.paymentId) {
+                redirectToMerchant(result.paymentId);
+            }
+
             return;
         }
 
@@ -245,7 +291,7 @@ paymentForm.addEventListener("submit", async (event) => {
 
         showMessage(
             "paymentMessage",
-            result.message, 
+            result.message,
             false
         );
 
@@ -277,6 +323,7 @@ paymentForm.addEventListener("submit", async (event) => {
 
 });
 
+
 // Load checkout details
 
 async function loadCheckoutDetails() {
@@ -306,6 +353,10 @@ async function loadCheckoutDetails() {
         document.getElementById("checkoutAmount").textContent =
             formatAmount(details.amountPaise);
 
+        // CHANGE: Capture the backend-validated return URL.
+        // Never take the redirect destination directly from browser parameters.
+        trustedReturnUrl = details.returnUrl || null;
+
     } catch (error) {
 
         showMessage(
@@ -317,6 +368,8 @@ async function loadCheckoutDetails() {
         closePaymentForm();
     }
 }
+
+
 // Initialize checkout
 
 loadCheckoutDetails();
@@ -324,4 +377,5 @@ loadCheckoutDetails();
 </script>
 
 </body>
+
 </html>

@@ -1,0 +1,2 @@
+ALTER TABLE payments
+ADD COLUMN return_url VARCHAR(1000);

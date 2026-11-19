@@ -8,11 +8,13 @@ import jakarta.validation.constraints.Pattern;
 public record CreatePaymentRequest(
 
     @NotNull
-    @Min(value = 1, message = "Amount can't be blank, minimum amount should be ₹1.00")
+    @Min(value = 100, message = "Amount can't be blank, minimum amount should be ₹1.00")
     Long amountPaise,
 
     @NotNull
     @Pattern(regexp = "INR", message = "Only INR is supported")
-    String currency
+    String currency,
+
+    String returnUrl
 
 ) {}

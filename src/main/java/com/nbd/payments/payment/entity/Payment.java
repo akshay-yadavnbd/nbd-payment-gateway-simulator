@@ -50,6 +50,9 @@ public class Payment {
     @Column(name = "idempotency_key", length = 100)
     private String idempotencyKey;
 
+    @Column(name = "return_url", length = 2048)
+    private String returnUrl;
+
     protected Payment() {}
 
     public Payment(
@@ -161,7 +164,16 @@ public class Payment {
         return idempotencyKey;
     }
 
+    public String getReturnUrl() {
+        return returnUrl;
+    }
+
     public void setIdempotencyKey(String idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
     }
+
+    public void setReturnUrl(String returnUrl) {
+        this.returnUrl = returnUrl;
+    }
+
 }
