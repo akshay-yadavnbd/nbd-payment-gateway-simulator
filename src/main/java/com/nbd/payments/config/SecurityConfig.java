@@ -4,17 +4,13 @@ package com.nbd.payments.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 
 
 @Configuration
@@ -66,7 +62,9 @@ public class SecurityConfig {
                     "/api/v1/payments",
                     "/api/v1/email-verification/clear-authorization",
                     "/api/v1/email-verification/send",
-                    "/api/v1/email-verification/request"
+                    "/api/v1/email-verification/request",
+                    "/api/v1/auth/merchant/forgot-password",
+                    "/api/v1/auth/merchant/reset-password"
                 ).permitAll()
 
                 .requestMatchers("/api/v1/admin/**")

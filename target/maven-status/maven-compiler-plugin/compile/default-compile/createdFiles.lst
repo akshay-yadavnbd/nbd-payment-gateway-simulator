@@ -1,3 +1,4 @@
+com\nbd\payments\auth\controller\MerchantPasswordRecoveryController.class
 com\nbd\payments\payment\repository\PaymentRepository.class
 com\nbd\payments\merchant\exception\DuplicateMerchantException.class
 com\nbd\payments\merchant\dto\MerchantLoginRequest.class
@@ -9,6 +10,7 @@ com\nbd\payments\config\SecurityConfig.class
 com\nbd\payments\email\service\EmailVerificationService$RegistrationAuthorization.class
 com\nbd\payments\payment\dto\CreatePaymentRequest.class
 com\nbd\payments\email\service\EmailVerificationService$VerificationRecord.class
+com\nbd\payments\auth\repository\PasswordResetTokenRepository.class
 com\nbd\payments\merchant\repository\MerchantApiKeyRepository.class
 com\nbd\payments\payment\dto\CardPaymentRequest.class
 com\nbd\payments\payment\controller\PaymentController.class
@@ -20,6 +22,7 @@ com\nbd\payments\merchant\repository\MerchantRepository.class
 com\nbd\payments\payment\dto\PaymentResponse.class
 com\nbd\payments\merchant\entity\Merchant.class
 com\nbd\payments\config\HealthController.class
+com\nbd\payments\auth\dto\ForgotPasswordRequest.class
 com\nbd\payments\config\PasswordConfig.class
 com\nbd\payments\admin\service\AdminService.class
 com\nbd\payments\payment\dto\PaymentSummaryResponse.class
@@ -27,10 +30,12 @@ com\nbd\payments\admin\dto\AdminLoginRequest.class
 com\nbd\payments\merchant\service\MerchantService.class
 com\nbd\payments\payment\dto\CardPaymentResponse.class
 com\nbd\payments\merchant\dto\MerchantLoginResponse.class
+com\nbd\payments\auth\entity\PasswordResetToken.class
 com\nbd\payments\merchant\controller\MerchantController.class
 com\nbd\payments\payment\service\PaymentService.class
 com\nbd\payments\payment\entity\PaymentAttempt.class
 com\nbd\payments\email\controller\EmailVerificationController.class
+com\nbd\payments\auth\service\MerchantPasswordRecoveryService.class
 com\nbd\payments\admin\dto\MerchantStatus.class
 com\nbd\payments\merchant\repository\MerchantCredentialRepository.class
 com\nbd\payments\email\service\EmailService.class
@@ -40,4 +45,5 @@ com\nbd\payments\merchant\dto\MerchantRegistrationResponse.class
 com\nbd\payments\merchant\dto\MerchantRegistrationRequest.class
 com\nbd\payments\merchant\service\MerchantApiKeyService.class
 com\nbd\payments\merchant\entity\MerchantCredential.class
+com\nbd\payments\auth\dto\ResetPasswordRequest.class
 com\nbd\payments\email\service\EmailVerificationService.class

@@ -228,6 +228,57 @@
             </form>
 
             <div id="loginMessage"></div>
+            <button
+                type="button"
+                id="forgotPasswordBtn"
+                class="secondary">
+                Forgot Password?
+            </button>
+
+            <div id="forgotPasswordMessage"></div>
+
+        </div>
+
+        <!-- PASSWORD RESET -->
+        <div class="card hidden" id="resetPasswordSection">
+
+            <h2>Reset Merchant Password</h2>
+
+            <form id="resetPasswordForm">
+
+                <label for="newPassword">
+                    New Password
+                </label>
+
+                <input
+                    id="newPassword"
+                    type="password"
+                    placeholder="Enter new password"
+                    minlength="8"
+                    maxlength="72"
+                    required
+                >
+
+                <label for="confirmPassword">
+                    Confirm New Password
+                </label>
+
+                <input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm new password"
+                    minlength="8"
+                    maxlength="72"
+                    required
+                >
+
+                <button type="submit" id="resetPasswordBtn">
+                    Reset Password
+                </button>
+
+            </form>
+
+            <div id="resetPasswordMessage"></div>
 
         </div>
 
@@ -418,6 +469,7 @@ const $ = id => document.getElementById(id);
 
 let merchantApiKey = "";
 let checkoutUrl = "";
+let passwordResetToken = "";
 
 function message(id, text, ok = true) {
     showMessage(id, text, ok);
@@ -476,6 +528,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     await checkRegistrationStatus();
+
+    passwordResetToken =
+        new URLSearchParams(location.search).get("resetToken") || "";
+
+    if (passwordResetToken) {
+
+        $("verificationSection").classList.add("hidden");
+        $("registrationSection").classList.add("hidden");
+        $("loginSection").classList.add("hidden");
+
+        $("resetPasswordSection").classList.remove("hidden");
+
+        history.replaceState(
+            {},
+            document.title,
+            "/merchant.html"
+        );
+    }
 });
 
 // ------------------------------------
@@ -729,6 +799,140 @@ $("loginForm").addEventListener(
     }
 );
 
+// ------------------------------------
+// FORGOT PASSWORD
+// ------------------------------------
+
+$("forgotPasswordBtn").addEventListener(
+    "click",
+    async () => {
+
+        const button = $("forgotPasswordBtn");
+
+        let email = $("loginEmail").value.trim();
+
+        if (!email) {
+            email = prompt("Enter your registered merchant email:");
+
+            if (!email) {
+                return;
+            }
+        }
+
+        setBusy(button, true);
+
+        try {
+
+            const csrf = await getCsrfToken("merchants");
+
+            const result = await api(
+                "/api/v1/auth/merchant/forgot-password",
+                {
+                    method: "POST",
+                    headers: csrf,
+                    body: JSON.stringify({
+                        email: email.trim().toLowerCase()
+                    })
+                }
+            );
+
+            message(
+                "forgotPasswordMessage",
+                result.message ||
+                "If your account is registered, you will receive a password reset link shortly. Please check your inbox."
+            );
+
+        } catch (error) {
+
+            message(
+                "forgotPasswordMessage",
+                error.message,
+                false
+            );
+
+        } finally {
+
+            setBusy(button, false);
+        }
+    }
+);
+
+// ------------------------------------
+// RESET PASSWORD
+// ------------------------------------
+
+$("resetPasswordForm").addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const button = $("resetPasswordBtn");
+
+        const newPassword = $("newPassword").value;
+        const confirmPassword = $("confirmPassword").value;
+
+        if (newPassword !== confirmPassword) {
+
+            message(
+                "resetPasswordMessage",
+                "Passwords do not match.",
+                false
+            );
+
+            return;
+        }
+
+        setBusy(button, true);
+
+        try {
+
+            const csrf = await getCsrfToken("merchants");
+
+            const result = await api(
+                "/api/v1/auth/merchant/reset-password",
+                {
+                    method: "POST",
+                    headers: csrf,
+                    body: JSON.stringify({
+                        token: passwordResetToken,
+                        newPassword: newPassword
+                    })
+                }
+            );
+
+            message(
+                "resetPasswordMessage",
+                result.message ||
+                "Password reset successfully."
+            );
+
+            $("resetPasswordForm").reset();
+
+            passwordResetToken = "";
+
+            $("resetPasswordSection").classList.add("hidden");
+            $("loginSection").classList.remove("hidden");
+
+            message(
+                "loginMessage",
+                "Password reset successfully. Please log in with your new password."
+            );
+
+        } catch (error) {
+
+            message(
+                "resetPasswordMessage",
+                error.message,
+                false
+            );
+
+        } finally {
+
+            setBusy(button, false);
+        }
+    }
+);
 
 // ------------------------------------
 // SHOW MERCHANT DASHBOARD

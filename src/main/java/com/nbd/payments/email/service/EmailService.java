@@ -36,4 +36,30 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+//Password reset email
+    public void sendPasswordResetEmail(
+            String toEmail,
+            String resetLink
+    ) {
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Reset your NBD Payments password");
+
+        message.setText(
+                "Hello,\n\n" +
+                "We received a request to reset your NBD Payments password.\n\n" +
+                "Use the link below to choose a new password:\n\n" +
+                resetLink + "\n\n" +
+                "This link expires in 30 minutes and can only be used once.\n\n" +
+                "If you did not request this, you can safely ignore this email.\n\n" +
+                "Regards,\n" +
+                "NBD Payments"
+        );
+
+        mailSender.send(message);
+    }
+
 }

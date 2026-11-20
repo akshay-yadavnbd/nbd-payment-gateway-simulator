@@ -4,6 +4,12 @@ C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\admin\dto\Admi
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\admin\dto\MerchantStatus.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\admin\dto\MerchantStatusRequest.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\admin\service\AdminService.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\auth\controller\MerchantPasswordRecoveryController.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\auth\dto\ForgotPasswordRequest.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\auth\dto\ResetPasswordRequest.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\auth\entity\PasswordResetToken.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\auth\repository\PasswordResetTokenRepository.java
+C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\auth\service\MerchantPasswordRecoveryService.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\common\exception\ApiExceptionHandler.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\config\HealthController.java
 C:\Users\Dell\Desktop\nbd-payments\src\main\java\com\nbd\payments\config\PasswordConfig.java
